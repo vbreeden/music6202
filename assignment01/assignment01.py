@@ -32,7 +32,6 @@ def findSnarePosition(snareFilename, loopFilename):
     lag = calculateLag(padded_loop, padded_snare)
     raw_savefile = results_dir + snareLocation_txt
 
-
     # We know from examining the file that there are four snare hits in the drum loop so we retrieve the location of
     # the four maximum values in the array. The returned partition is in last to first order so we reverse it once
     # it is retrieved.
