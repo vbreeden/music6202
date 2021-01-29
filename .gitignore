@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Reaper peak files
+.reapeaks
+
+# Pycharm files
+.idea/
