@@ -1,0 +1,5 @@
+Snare location array adjusting for lag:
+[ 22050  66150 110250 154350]
+
+Timestamps (in seconds) of snare hits:
+[0.5 1.5 2.5 3.5]
