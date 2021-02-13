@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.fft import fft, fftfreq
 import matplotlib.pyplot as plt
 
 
@@ -14,24 +15,42 @@ def generateSinusoidal(amplitude, sampling_rate_Hz, frequency_Hz, length_secs, p
 
     w = 2*np.pi*frequency_Hz
     t = np.fromiter([sample_time/sampling_rate_Hz for sample_time in range(samples)], dtype=np.float)
-    x = [amplitude*np.sin(w*sample_time/sampling_rate_Hz+phase_radians) for sample_time in range(samples)]
+    x = [amplitude*np.sin((w*sample_time/sampling_rate_Hz)+phase_radians) for sample_time in range(samples)]
 
     return t, x
 
 
 # Question 2: Combine Sinusoids to generate waveforms with complex spectra (10 sinusoidals)
 def generateSquare(amplitude, sampling_rate_Hz, frequency_Hz, length_secs, phase_radians):
-    t = np.zeros(int(frequency_Hz*length_secs))
-    sinusoids = []
+    iterations = 10
+    t = np.zeros(int(sampling_rate_Hz*length_secs))
+    sinusoids = np.zeros(len(t))
     # A Square wave is a summation of odd harmonics (1, 3, 5, 7, etc)
-    for i in range(10):
+    for i in range(iterations):
+        k = i+1
         interval = 2*i + 1
         harmonic = interval * frequency_Hz
-        t_samples, x = generateSinusoidal(amplitude, sampling_rate_Hz, harmonic, length_secs, phase_radians)
+        amp = amplitude * (4/(np.pi*(2*k-1)))
+        t_samples, x = generateSinusoidal(amp, sampling_rate_Hz, harmonic, length_secs, phase_radians)
         t = t_samples
-        sinusoids.append(x)
+        sinusoids = np.add(sinusoids, x)
 
-    return t, 0
+    return t, sinusoids
+
+
+def computeSpectrum(x, sample_rate_Hz):
+    spectrum = fft(x, sample_rate_Hz)
+    samples = spectrum.shape[-1]
+    pos_samples = int(samples/2)
+
+    # We're only interested in the real portion so we only return the positive values.
+    f = fftfreq(samples)[:pos_samples]
+    XAbs = np.abs(spectrum)[:pos_samples]
+    XPhase = np.angle(spectrum)[:pos_samples]
+    XRe = spectrum.real[:pos_samples]
+    XIm = spectrum.imag[:pos_samples]
+
+    return f, XAbs, XPhase, XRe, XIm
 
 
 def plotWaveFunction(wave, sr, ms, title, save_file):
@@ -62,17 +81,32 @@ if __name__ == '__main__':
     phase_radians = np.pi/2
 
     # Question 1: Generate a 400Hz Sine Wave
-    # t, x = generateSinusoidal(amplitude, sampling_rate_Hz, frequency_Hz, length_secs, phase_radians)
-    #
-    # # Plot the first 5ms of x
-    # title = '5ms plot of 400Hz Sine Wave'
-    # save_file = results_dir + question1_file
-    # plotWaveFunction(wave=x, sr=sampling_rate_Hz, ms=5, title=title, save_file=save_file)
+    t, x_sine = generateSinusoidal(amplitude, sampling_rate_Hz, frequency_Hz, length_secs, phase_radians)
+
+    # Plot the first 5ms of x
+    title = '5ms plot of 400Hz Sine Wave'
+    save_file = results_dir + question1_file
+    plotWaveFunction(wave=x_sine, sr=sampling_rate_Hz, ms=5, title=title, save_file=save_file)
 
     # Question 2: Generate a 400Hz Square Wave
-    t, x = generateSquare(amplitude, sampling_rate_Hz, frequency_Hz, length_secs, phase_radians)
+    phase_radians = 0
+    t, x_square = generateSquare(amplitude, sampling_rate_Hz, frequency_Hz, length_secs, phase_radians)
 
     # Plot the first 5ms of x
     title = '5ms plot of 400Hz Square Wave'
     save_file = results_dir + question2_file
-    plotWaveFunction(wave=x, sr=sampling_rate_Hz, ms=5, title=title, save_file=save_file)
+    plotWaveFunction(wave=x_square, sr=sampling_rate_Hz, ms=5, title=title, save_file=save_file)
+
+    # Question 3: Fourier Transforms
+    f, XAbs, XPhase, XRe, XIm = computeSpectrum(x_square, sampling_rate_Hz)
+
+    f_min = f.min()
+    f_max = f.max()
+    idx = np.argmax(XAbs)
+    freq = f[idx]
+    freq_in_Hz = abs(freq*sampling_rate_Hz)
+
+    fig, ax = plt.subplots(1, 1)
+    ax.plot(XAbs)
+    plt.show()
+    print('stuff')
