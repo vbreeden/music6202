@@ -47,6 +47,7 @@ def generateSquare(amplitude, sampling_rate_Hz, frequency_Hz, length_secs, phase
 def computeSpectrum(x, sample_rate_Hz):
     spectrum = fft(x) / x.shape[0]
     samples = spectrum.shape[-1]
+
     pos_samples = int(samples/2)
     time_step = 1/sample_rate_Hz
 
@@ -56,12 +57,6 @@ def computeSpectrum(x, sample_rate_Hz):
     XPhase = np.angle(spectrum)[:pos_samples]
     XRe = spectrum.real[:pos_samples]
     XIm = spectrum.imag[:pos_samples]
-
-    # f = fftfreq(samples, time_step)
-    # XAbs = np.abs(spectrum)
-    # XPhase = np.angle(spectrum)
-    # XRe = spectrum.real
-    # XIm = spectrum.imag
 
     return f, XAbs, XPhase, XRe, XIm
 
@@ -85,6 +80,7 @@ def plotWaveFunction(wave, sr, ms, title, save_file):
     plt.savefig(save_file)
     plt.show()
 
+
 # Plot FFT Data for Question 3
 def plotFFTData(f, XAbs, XPhase, title, xlabel, ylabels, save_file):
     fig, axes = plt.subplots(2, sharex=True, gridspec_kw={'hspace': 0})
@@ -93,6 +89,7 @@ def plotFFTData(f, XAbs, XPhase, title, xlabel, ylabels, save_file):
     axes[0].set(xlabel=xlabel)
     axes[0].set(ylabel=ylabels[0])
     axes[1].plot(f, np.unwrap(XPhase))
+    # axes[1].plot(f, XPhase)
     axes[1].set(xlabel=xlabel)
     axes[1].set(ylabel=ylabels[1])
 
@@ -144,4 +141,3 @@ if __name__ == '__main__':
     save_file = results_dir + question3_file2
     f, XAbs, XPhase, XRe, XIm = computeSpectrum(x_square, sampling_rate_Hz)
     plotFFTData(f, XAbs, XPhase, title=title, xlabel=xlabel, ylabels=ylabels, save_file=save_file)
-

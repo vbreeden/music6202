@@ -1,0 +1,11 @@
+Question 3.4:
+Frequency resolution is equal to the sampling rate, Fs, divided by the fft size, .
+In this assignment we considered the entire signal, N = 22050 samples, with a sampling rate of, Fs = 44100Hz.
+That gives a frequency range of Fs/N = 44100Hz/22050 samples or 0.5Hz/sample
+
+The frequency resolution of the FFT is:
+Fs/N = 0.5Hz/sample
+
+---------------------------------------
+Question 3.5:
+Zero padding a time-domain waveform does not improve the underlying frequency resolution so the frequency resolution of the zero-padded input signal would not change.
