@@ -44,6 +44,7 @@ def generateSquare(amplitude, sampling_rate_Hz, frequency_Hz, length_secs, phase
     return t, sinusoids
 
 
+# Question 3: The FFT and its constituent parts are computed in this function.
 def computeSpectrum(x, sample_rate_Hz):
     spectrum = fft(x) / x.shape[0]
     samples = spectrum.shape[-1]
@@ -61,6 +62,7 @@ def computeSpectrum(x, sample_rate_Hz):
     return f, XAbs, XPhase, XRe, XIm
 
 
+# Waveforms are printed for questions 1 and 2.
 def plotWaveFunction(wave, sr, ms, title, save_file):
 
     # Set the tick marks to display milliseconds instead of samples.
