@@ -1,6 +1,7 @@
 import numpy as np
 from numpy.fft import fft, fftfreq
 import matplotlib.pyplot as plt
+from matplotlib import mlab
 
 
 results_dir = 'results/'
@@ -62,6 +63,60 @@ def computeSpectrum(x, sample_rate_Hz):
     return f, XAbs, XPhase, XRe, XIm
 
 
+# Question 4.1: Generate blocks used to create blocks for an STFT.
+def generateBlocks(x, sample_rate_Hz, block_size, hop_size):
+
+    # Find the raw number of blocks.
+    blocks = (len(x) - block_size) / hop_size
+
+    # If blocks isn't a whole number then we need to pad the original signal and recalculate the number of blocks.
+    if not blocks.is_integer():
+        pad_length = int(block_size + np.ceil(blocks)*hop_size - len(x))
+        x = np.pad(x, (0, pad_length), 'constant')
+        blocks = int((len(x) - block_size) / hop_size) + 1
+
+    # Initialize the time slice array and signal matrix
+    t = np.zeros(blocks)
+    X = np.zeros(shape=(blocks, block_size))
+
+    # Calculate timestamps for each sample in x. We will use this to find the timestamp of the start of each block.
+    # There's probably a more efficient way to do this, but it's getting late and this method is easy to read.
+    sample_time = 1 / sample_rate_Hz
+    full_time = np.arange(0, sample_time*len(x), sample_time)
+
+    # Populate t and X.
+    start_pos = 0
+    for i in range(blocks):
+        t[i] = full_time[start_pos]
+        X[i] = x[start_pos:start_pos+2048]
+        start_pos += hop_size
+
+    return t, X
+
+
+# Question 4.2 Generate a spectrogram
+def mySpecgram(x, block_size, hop_size, sampling_rate_Hz, window_type):
+    freq_vector = 0
+    time_vector = 0
+
+    hop_size = int(hop_size)
+
+    t, X = generateBlocks(x, sampling_rate_Hz, block_size, hop_size)
+
+    magnitude_spectrogram = np.zeros(shape=(int(np.ceil(block_size/2)), X.shape[0]))
+    # magnitude_spectrogram = np.zeros(shape=(X.shape[0], int(block_size / 2)))
+
+    for i in range(X.shape[0]):
+        f, XAbs, XPhase, XRe, XIm = computeSpectrum(X[i], sampling_rate_Hz)
+        magnitude_spectrogram[:, i] = XAbs
+        # magnitude_spectrogram[i, :] = XAbs
+
+    spectrum, freqs, time, im = plt.specgram(x, NFFT=block_size, Fs=sampling_rate_Hz, noverlap=hop_size)
+    # plt.plot(f, magnitude_spectrogram)
+    plt.show()
+
+    return freq_vector, time_vector, magnitude_spectrogram
+
 # Waveforms are printed for questions 1 and 2.
 def plotWaveFunction(wave, sr, ms, title, save_file):
 
@@ -91,7 +146,6 @@ def plotFFTData(f, XAbs, XPhase, title, xlabel, ylabels, save_file):
     axes[0].set(xlabel=xlabel)
     axes[0].set(ylabel=ylabels[0])
     axes[1].plot(f, np.unwrap(XPhase))
-    # axes[1].plot(f, XPhase)
     axes[1].set(xlabel=xlabel)
     axes[1].set(ylabel=ylabels[1])
 
@@ -143,3 +197,14 @@ if __name__ == '__main__':
     save_file = results_dir + question3_file2
     f, XAbs, XPhase, XRe, XIm = computeSpectrum(x_square, sampling_rate_Hz)
     plotFFTData(f, XAbs, XPhase, title=title, xlabel=xlabel, ylabels=ylabels, save_file=save_file)
+
+    # --------------------------------------
+    # Question 4: Spectrogram
+    block_size = 2048
+    hop_size = 1024
+    window_type = 'rect'
+    freq_vector, time_vector, magnitude_spectrogram = mySpecgram(x_square, block_size, hop_size, sampling_rate_Hz, window_type)
+
+    window_type = 'hann'
+    freq_vector, time_vector, magnitude_spectrogram = mySpecgram(x_sine, block_size, hop_size, sampling_rate_Hz,
+                                                                 window_type)
