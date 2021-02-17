@@ -104,15 +104,24 @@ def mySpecgram(x, block_size, hop_size, sampling_rate_Hz, window_type):
     t, X = generateBlocks(x, sampling_rate_Hz, block_size, hop_size)
 
     magnitude_spectrogram = np.zeros(shape=(int(np.ceil(block_size/2)), X.shape[0]))
-    # magnitude_spectrogram = np.zeros(shape=(X.shape[0], int(block_size / 2)))
-
     for i in range(X.shape[0]):
         f, XAbs, XPhase, XRe, XIm = computeSpectrum(X[i], sampling_rate_Hz)
         magnitude_spectrogram[:, i] = XAbs
-        # magnitude_spectrogram[i, :] = XAbs
 
-    spectrum, freqs, time, im = plt.specgram(x, NFFT=block_size, Fs=sampling_rate_Hz, noverlap=hop_size)
-    # plt.plot(f, magnitude_spectrogram)
+    fig = plt.figure()
+    plt_mag = plt.imshow(magnitude_spectrogram, origin='lower', interpolation='nearest',
+                         aspect='auto', cmap='BrBG')  # interpolation='nearest',
+
+    num_y_ticks = 1024
+    sample_nums = np.linspace(0, magnitude_spectrogram.shape[0], num_y_ticks)
+    step_size_Hz = f[-1]/len(f)
+    # y_ticks = np.arange(f[0], f[-1], step_size_Hz*10)
+    y_ticks = [f[i] for i in range(0, len(f), int(len(f)/20) - 1)]
+    # plt.yticks(y_ticks)
+    plt.locator_params(axis='y', nbins=10)
+    plt.ylabel("Frequency (Hz)")
+    plt.tight_layout()
+    # spectrum, freqs, time, im = plt.specgram(x, NFFT=block_size, Fs=sampling_rate_Hz, noverlap=hop_size)
     plt.show()
 
     return freq_vector, time_vector, magnitude_spectrogram
@@ -206,5 +215,5 @@ if __name__ == '__main__':
     freq_vector, time_vector, magnitude_spectrogram = mySpecgram(x_square, block_size, hop_size, sampling_rate_Hz, window_type)
 
     window_type = 'hann'
-    freq_vector, time_vector, magnitude_spectrogram = mySpecgram(x_sine, block_size, hop_size, sampling_rate_Hz,
+    freq_vector, time_vector, magnitude_spectrogram = mySpecgram(x_square, block_size, hop_size, sampling_rate_Hz,
                                                                  window_type)
