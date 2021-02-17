@@ -103,25 +103,30 @@ def mySpecgram(x, block_size, hop_size, sampling_rate_Hz, window_type):
 
     t, X = generateBlocks(x, sampling_rate_Hz, block_size, hop_size)
 
+    hann_window = np.hanning(block_size)
     magnitude_spectrogram = np.zeros(shape=(int(np.ceil(block_size/2)), X.shape[0]))
     for i in range(X.shape[0]):
-        f, XAbs, XPhase, XRe, XIm = computeSpectrum(X[i], sampling_rate_Hz)
+        if window_type == 'hann':
+            f, XAbs, XPhase, XRe, XIm = computeSpectrum(X[i]*hann_window, sampling_rate_Hz)
+        else:
+            f, XAbs, XPhase, XRe, XIm = computeSpectrum(X[i], sampling_rate_Hz)
         magnitude_spectrogram[:, i] = XAbs
 
-    fig = plt.figure()
-    plt_mag = plt.imshow(magnitude_spectrogram, origin='lower', interpolation='nearest',
-                         aspect='auto', cmap='BrBG')  # interpolation='nearest',
+    spectrum, freqs, time, im = plt.specgram(x, NFFT=block_size, Fs=sampling_rate_Hz, noverlap=hop_size)
 
-    num_y_ticks = 1024
-    sample_nums = np.linspace(0, magnitude_spectrogram.shape[0], num_y_ticks)
-    step_size_Hz = f[-1]/len(f)
-    # y_ticks = np.arange(f[0], f[-1], step_size_Hz*10)
-    y_ticks = [f[i] for i in range(0, len(f), int(len(f)/20) - 1)]
-    # plt.yticks(y_ticks)
-    plt.locator_params(axis='y', nbins=10)
-    plt.ylabel("Frequency (Hz)")
-    plt.tight_layout()
-    # spectrum, freqs, time, im = plt.specgram(x, NFFT=block_size, Fs=sampling_rate_Hz, noverlap=hop_size)
+    # plt.imshow(magnitude_spectrogram[0:512], origin='lower', interpolation='nearest',
+    #            aspect='auto', cmap='Spectral')
+    #
+    # num_y_ticks = 1024
+    # sample_nums = np.linspace(0, magnitude_spectrogram.shape[0], num_y_ticks)
+    # step_size_Hz = f[-1]/len(f)
+    # # y_ticks = np.arange(f[0], f[-1], step_size_Hz*10)
+    # # y_ticks = [f[i] for i in range(0, len(f), int(len(f)/20) - 1)]
+    # # plt.yticks(y_ticks)
+    # plt.locator_params(axis='y', nbins=1024)
+    # plt.ylabel("Frequency (Hz)")
+    # plt.tight_layout()
+
     plt.show()
 
     return freq_vector, time_vector, magnitude_spectrogram
@@ -211,7 +216,7 @@ if __name__ == '__main__':
     # Question 4: Spectrogram
     block_size = 2048
     hop_size = 1024
-    window_type = 'rect'
+    window_type = 'hann'
     freq_vector, time_vector, magnitude_spectrogram = mySpecgram(x_square, block_size, hop_size, sampling_rate_Hz, window_type)
 
     window_type = 'hann'
