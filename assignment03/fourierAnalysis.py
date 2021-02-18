@@ -9,6 +9,8 @@ question1_file = '01_sinusoidal.png'
 question2_file = '02_squareWave.png'
 question3_file1 = '03_sineWaveFFT.png'
 question3_file2 = '03_squareWaveFFT.png'
+question4_file1 = '04_rectSpectrogram.png'
+question4_file2 = '04_hannSpectrogram.png'
 
 
 # Question 1: Generating sinusoids in Python
@@ -112,21 +114,23 @@ def mySpecgram(x, block_size, hop_size, sampling_rate_Hz, window_type):
             f, XAbs, XPhase, XRe, XIm = computeSpectrum(X[i], sampling_rate_Hz)
         magnitude_spectrogram[:, i] = XAbs
 
-    spectrum, freqs, time, im = plt.specgram(x, NFFT=block_size, Fs=sampling_rate_Hz, noverlap=hop_size)
+    magnitude_spectrogram = np.log10(magnitude_spectrogram)
+    # spectrum, freqs, time, im = plt.specgram(x, NFFT=block_size, Fs=sampling_rate_Hz, noverlap=hop_size)
 
-    # plt.imshow(magnitude_spectrogram[0:512], origin='lower', interpolation='nearest',
-    #            aspect='auto', cmap='Spectral')
-    #
-    # num_y_ticks = 1024
-    # sample_nums = np.linspace(0, magnitude_spectrogram.shape[0], num_y_ticks)
-    # step_size_Hz = f[-1]/len(f)
-    # # y_ticks = np.arange(f[0], f[-1], step_size_Hz*10)
-    # # y_ticks = [f[i] for i in range(0, len(f), int(len(f)/20) - 1)]
-    # # plt.yticks(y_ticks)
-    # plt.locator_params(axis='y', nbins=1024)
-    # plt.ylabel("Frequency (Hz)")
-    # plt.tight_layout()
+    plt.imshow(magnitude_spectrogram, origin='lower', interpolation='nearest',
+               aspect='auto', extent=[t[0], t[-1], f[0], f[-1]])
 
+    if window_type == 'hann':
+        plt.title('Spectrogram with a Hanning Window')
+        save_file = results_dir + question4_file2
+    else:
+        save_file = results_dir + question4_file1
+        plt.title('Spectrogram with a Rectangular Window')
+
+    plt.ylabel("Frequency (Hz)")
+    plt.xlabel("Time (s)")
+
+    plt.savefig(save_file)
     plt.show()
 
     return freq_vector, time_vector, magnitude_spectrogram
@@ -159,7 +163,7 @@ def plotFFTData(f, XAbs, XPhase, title, xlabel, ylabels, save_file):
     axes[0].plot(f, XAbs)
     axes[0].set(xlabel=xlabel)
     axes[0].set(ylabel=ylabels[0])
-    axes[1].plot(f, np.unwrap(XPhase))
+    axes[1].plot(f, XPhase)
     axes[1].set(xlabel=xlabel)
     axes[1].set(ylabel=ylabels[1])
 
@@ -216,9 +220,12 @@ if __name__ == '__main__':
     # Question 4: Spectrogram
     block_size = 2048
     hop_size = 1024
-    window_type = 'hann'
+
+    # Spectrogram of the square wave with a rectangular window applied.
+    window_type = 'rect'
     freq_vector, time_vector, magnitude_spectrogram = mySpecgram(x_square, block_size, hop_size, sampling_rate_Hz, window_type)
 
+    # Spectrogram of the square wave with a hanning window applied.
     window_type = 'hann'
     freq_vector, time_vector, magnitude_spectrogram = mySpecgram(x_square, block_size, hop_size, sampling_rate_Hz,
                                                                  window_type)
