@@ -1,5 +1,5 @@
 import numpy as np
-from numpy.fft import fft, fftfreq
+from numpy.fft import fft
 import matplotlib.pyplot as plt
 from matplotlib import mlab
 
@@ -53,10 +53,9 @@ def computeSpectrum(x, sample_rate_Hz):
     samples = spectrum.shape[-1]
 
     pos_samples = int(samples/2)
-    time_step = 1/sample_rate_Hz
 
     # We're only interested in the real portion so we only return the positive values.
-    f = fftfreq(samples, time_step)[:pos_samples]
+    f = np.asarray([i*sample_rate_Hz/samples for i in range(pos_samples)])
     XAbs = np.abs(spectrum)[:pos_samples]
     XPhase = np.angle(spectrum)[:pos_samples]
     XRe = spectrum.real[:pos_samples]
