@@ -1,7 +1,6 @@
 import numpy as np
 from numpy.fft import fft
 import matplotlib.pyplot as plt
-from matplotlib import mlab
 
 
 results_dir = 'results/'
@@ -49,7 +48,7 @@ def generateSquare(amplitude, sampling_rate_Hz, frequency_Hz, length_secs, phase
 
 # Question 3: The FFT and its constituent parts are computed in this function.
 def computeSpectrum(x, sample_rate_Hz):
-    spectrum = fft(x) / x.shape[0]
+    spectrum = fft(x)  # / x.shape[0]
     samples = spectrum.shape[-1]
 
     pos_samples = int(samples/2)
@@ -97,15 +96,13 @@ def generateBlocks(x, sample_rate_Hz, block_size, hop_size):
 
 # Question 4.2 Generate a spectrogram
 def mySpecgram(x, block_size, hop_size, sampling_rate_Hz, window_type):
-    freq_vector = 0
-    time_vector = 0
-
     hop_size = int(hop_size)
 
     t, X = generateBlocks(x, sampling_rate_Hz, block_size, hop_size)
 
     hann_window = np.hanning(block_size)
     magnitude_spectrogram = np.zeros(shape=(int(np.ceil(block_size/2)), X.shape[0]))
+
     for i in range(X.shape[0]):
         if window_type == 'hann':
             f, XAbs, XPhase, XRe, XIm = computeSpectrum(X[i]*hann_window, sampling_rate_Hz)
@@ -113,11 +110,14 @@ def mySpecgram(x, block_size, hop_size, sampling_rate_Hz, window_type):
             f, XAbs, XPhase, XRe, XIm = computeSpectrum(X[i], sampling_rate_Hz)
         magnitude_spectrogram[:, i] = XAbs
 
-    magnitude_spectrogram = np.log10(magnitude_spectrogram)
-    # spectrum, freqs, time, im = plt.specgram(x, NFFT=block_size, Fs=sampling_rate_Hz, noverlap=hop_size)
+    freq_vector = f
+    time_vector = t
+
+    magnitude_spectrogram = 10*np.log10(magnitude_spectrogram)
 
     plt.imshow(magnitude_spectrogram, origin='lower', interpolation='nearest',
                aspect='auto', extent=[t[0], t[-1], f[0], f[-1]])
+    plt.colorbar()
 
     if window_type == 'hann':
         plt.title('Spectrogram with a Hanning Window')
@@ -203,7 +203,7 @@ if __name__ == '__main__':
     # Question 3: Fourier Transforms
     # Plot sine wave data
     title = 'Sine Wave Magnitude and Phase'
-    xlabel = 'Frequency'
+    xlabel = 'Frequency (Hz)'
     ylabels = ['Magnitude (energy)', 'Phase (radians)']
     save_file = results_dir + question3_file1
     f, XAbs, XPhase, XRe, XIm = computeSpectrum(x_sine, sampling_rate_Hz)
