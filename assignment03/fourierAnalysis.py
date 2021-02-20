@@ -139,10 +139,22 @@ def mySpecgram(x, block_size, hop_size, sampling_rate_Hz, window_type):
     return freq_vector, time_vector, magnitude_spectrogram
 
 
-# Question 5: Generate a Sine Sweep
-def generateSineSweep(spectrum):
-    print(2)
+# Question 5: Generate a Sine Sweep from the Spectral Domain
+def generateSineSweep(XRe, XIm):
 
+    # Construct the complex spectrum
+    spectrum = XRe + 1j*XIm
+
+    # np.roll treats spectrum as a circular queue and shifts the place of each sample up by an increment of i.
+    # This loop will increase to a maximum beating frequency at i = len(spectrum)/2, pass back through lower
+    # frequencies, and then return to the original frequency (because of the circular behavior of np.roll)
+    # after the loop has fully resolved. On each pass the signal is converted back to the time domain and
+    # should then be passed to an audio generation library.
+    # I have omitted a call to an audio library to prevent any potential "missing package" errors.
+    for i in range(len(spectrum)):
+        sweep_spectrum = np.roll(spectrum, i)
+        time_domain_signal = np.fft.ifft(sweep_spectrum)
+        # time_domain_signal would be passed to an audio library here.
 
 # Waveforms are printed for questions 1 and 2.
 def plotWaveFunction(wave, sr, ms, title, save_file):
@@ -216,14 +228,14 @@ if __name__ == '__main__':
     xlabel = 'Frequency (Hz)'
     ylabels = ['Magnitude (energy)', 'Phase (radians)']
     save_file = os.path.join(cwd, results_dir, question3_file1)
-    f, XAbs, XPhase, XRe, XIm = computeSpectrum(x_sine, sampling_rate_Hz)
-    plotFFTData(f, XAbs, XPhase, title=title, xlabel=xlabel, ylabels=ylabels, save_file=save_file)
+    f_sine, XAbs_sine, XPhase_sine, XRe_sine, XIm_sine = computeSpectrum(x_sine, sampling_rate_Hz)
+    plotFFTData(f_sine, XAbs_sine, XPhase_sine, title=title, xlabel=xlabel, ylabels=ylabels, save_file=save_file)
 
     # Plot square wave data
     title = 'Square Wave Magnitude and Phase'
     save_file = os.path.join(cwd, results_dir, question3_file2)
-    f, XAbs, XPhase, XRe, XIm = computeSpectrum(x_square, sampling_rate_Hz)
-    plotFFTData(f, XAbs, XPhase, title=title, xlabel=xlabel, ylabels=ylabels, save_file=save_file)
+    f_square, XAbs_square, XPhase_square, XRe_square, XIm_square = computeSpectrum(x_square, sampling_rate_Hz)
+    plotFFTData(f_square, XAbs_square, XPhase_square, title=title, xlabel=xlabel, ylabels=ylabels, save_file=save_file)
 
     # --------------------------------------
     # Question 4: Spectrogram
@@ -232,7 +244,8 @@ if __name__ == '__main__':
 
     # Spectrogram of the square wave with a rectangular window applied.
     window_type = 'rect'
-    freq_vector, time_vector, magnitude_spectrogram = mySpecgram(x_square, block_size, hop_size, sampling_rate_Hz, window_type)
+    freq_vector, time_vector, magnitude_spectrogram = mySpecgram(x_square, block_size, hop_size, sampling_rate_Hz,
+                                                                 window_type)
 
     # Spectrogram of the square wave with a hanning window applied.
     window_type = 'hann'
@@ -242,4 +255,4 @@ if __name__ == '__main__':
     # --------------------------------------
     # Question 4: Sine Sweep
     # Pass in the first block of spectrogram data
-    generateSineSweep(magnitude_spectrogram[:, 0])
+    generateSineSweep(XRe_sine, XIm_sine)
