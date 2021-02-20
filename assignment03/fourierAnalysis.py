@@ -100,6 +100,10 @@ def mySpecgram(x, block_size, hop_size, sampling_rate_Hz, window_type):
 
     t, X = generateBlocks(x, sampling_rate_Hz, block_size, hop_size)
 
+    if window_type != 'hann':
+        print('A hanning window was not requested so we will be defaulting to a rectangular window.')
+        print('This is equivalent to not passing a window at all.')
+
     hann_window = np.hanning(block_size)
     magnitude_spectrogram = np.zeros(shape=(int(np.ceil(block_size/2)), X.shape[0]))
 
