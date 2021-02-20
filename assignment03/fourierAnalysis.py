@@ -10,6 +10,7 @@ question3_file1 = '03_sineWaveFFT.png'
 question3_file2 = '03_squareWaveFFT.png'
 question4_file1 = '04_rectSpectrogram.png'
 question4_file2 = '04_hannSpectrogram.png'
+question5_file1 = '05_sinesweep_max_frequency.png'
 cwd = os.getcwd()
 
 # Question 1: Generating sinusoids in Python
@@ -151,10 +152,15 @@ def generateSineSweep(XRe, XIm):
     # after the loop has fully resolved. On each pass the signal is converted back to the time domain and
     # should then be passed to an audio generation library.
     # I have omitted a call to an audio library to prevent any potential "missing package" errors.
+    # Comment Update: I generated the spectrogram of the output at len(spectrum)/2 along with a few other frequencies.
+    # While the time domain signal looks like a beating signal at len(spectrum)/2, the spectrogram presents fairly
+    # clean. There appears to be a faint secondary signal, but I suspect implementing proper anti-aliasing can address
+    # that issue.
     for i in range(len(spectrum)):
         sweep_spectrum = np.roll(spectrum, i)
         time_domain_signal = np.fft.ifft(sweep_spectrum)
         # time_domain_signal would be passed to an audio library here.
+
 
 # Waveforms are printed for questions 1 and 2.
 def plotWaveFunction(wave, sr, ms, title, save_file):
