@@ -1,7 +1,7 @@
+import os
 import numpy as np
 from numpy.fft import fft
 import matplotlib.pyplot as plt
-
 
 results_dir = 'results/'
 question1_file = '01_sinusoidal.png'
@@ -10,7 +10,7 @@ question3_file1 = '03_sineWaveFFT.png'
 question3_file2 = '03_squareWaveFFT.png'
 question4_file1 = '04_rectSpectrogram.png'
 question4_file2 = '04_hannSpectrogram.png'
-
+cwd = os.getcwd()
 
 # Question 1: Generating sinusoids in Python
 def generateSinusoidal(amplitude, sampling_rate_Hz, frequency_Hz, length_secs, phase_radians):
@@ -94,7 +94,7 @@ def generateBlocks(x, sample_rate_Hz, block_size, hop_size):
     return t, X
 
 
-# Question 4.2 Generate a spectrogram
+# Question 4.2: Generate a spectrogram
 def mySpecgram(x, block_size, hop_size, sampling_rate_Hz, window_type):
     hop_size = int(hop_size)
 
@@ -121,9 +121,9 @@ def mySpecgram(x, block_size, hop_size, sampling_rate_Hz, window_type):
 
     if window_type == 'hann':
         plt.title('Spectrogram with a Hanning Window')
-        save_file = results_dir + question4_file2
+        save_file = os.path.join(cwd, results_dir, question4_file2)
     else:
-        save_file = results_dir + question4_file1
+        save_file = os.path.join(cwd, results_dir, question4_file1)
         plt.title('Spectrogram with a Rectangular Window')
 
     plt.ylabel("Frequency (Hz)")
@@ -133,6 +133,12 @@ def mySpecgram(x, block_size, hop_size, sampling_rate_Hz, window_type):
     plt.show()
 
     return freq_vector, time_vector, magnitude_spectrogram
+
+
+# Question 5: Generate a Sine Sweep
+def generateSineSweep(spectrum):
+    print(2)
+
 
 # Waveforms are printed for questions 1 and 2.
 def plotWaveFunction(wave, sr, ms, title, save_file):
@@ -186,7 +192,7 @@ if __name__ == '__main__':
 
     # Plot the first 5ms of x
     title = '5ms plot of 400Hz Sine Wave'
-    save_file = results_dir + question1_file
+    save_file = os.path.join(cwd, results_dir, question1_file)
     plotWaveFunction(wave=x_sine, sr=sampling_rate_Hz, ms=5, title=title, save_file=save_file)
 
     # --------------------------------------
@@ -196,7 +202,7 @@ if __name__ == '__main__':
 
     # Plot the first 5ms of x
     title = '5ms plot of 400Hz Square Wave'
-    save_file = results_dir + question2_file
+    save_file = os.path.join(cwd, results_dir, question2_file)
     plotWaveFunction(wave=x_square, sr=sampling_rate_Hz, ms=5, title=title, save_file=save_file)
 
     # --------------------------------------
@@ -205,13 +211,13 @@ if __name__ == '__main__':
     title = 'Sine Wave Magnitude and Phase'
     xlabel = 'Frequency (Hz)'
     ylabels = ['Magnitude (energy)', 'Phase (radians)']
-    save_file = results_dir + question3_file1
+    save_file = os.path.join(cwd, results_dir, question3_file1)
     f, XAbs, XPhase, XRe, XIm = computeSpectrum(x_sine, sampling_rate_Hz)
     plotFFTData(f, XAbs, XPhase, title=title, xlabel=xlabel, ylabels=ylabels, save_file=save_file)
 
     # Plot square wave data
     title = 'Square Wave Magnitude and Phase'
-    save_file = results_dir + question3_file2
+    save_file = os.path.join(cwd, results_dir, question3_file2)
     f, XAbs, XPhase, XRe, XIm = computeSpectrum(x_square, sampling_rate_Hz)
     plotFFTData(f, XAbs, XPhase, title=title, xlabel=xlabel, ylabels=ylabels, save_file=save_file)
 
@@ -228,3 +234,8 @@ if __name__ == '__main__':
     window_type = 'hann'
     freq_vector, time_vector, magnitude_spectrogram = mySpecgram(x_square, block_size, hop_size, sampling_rate_Hz,
                                                                  window_type)
+
+    # --------------------------------------
+    # Question 4: Sine Sweep
+    # Pass in the first block of spectrogram data
+    generateSineSweep(magnitude_spectrogram[:, 0])
