@@ -5,7 +5,10 @@
 # Rhythm Jain
 import sys
 import argparse
-
+from FinalProject.Effects.Convolution import Reverb
+from FinalProject.Effects.Filter import Bandpass, Lowpass
+from FinalProject.Effects.Modulation import Chorus, Delay, Vibrato
+from FinalProject.Engine.Synth import AdditiveSynth, WavetableSynth
 
 # This is the parser that will parse commandline arguments.
 parser = argparse.ArgumentParser()
@@ -23,4 +26,5 @@ def define_args():
 
 if __name__ == '__main__':
     args = define_args()
+
     print(args)
