@@ -5,10 +5,11 @@
 # Rhythm Jain
 import sys
 import argparse
-from FinalProject.Effects.Convolution import Reverb
-from FinalProject.Effects.Filter import Bandpass, Lowpass
-from FinalProject.Effects.Modulation import Chorus, Delay, Vibrato
-from FinalProject.Engine.Synth import AdditiveSynth, WavetableSynth
+from .Engine.AudioCore import KrnParser
+#from FinalProject.Effects.Convolution import Reverb
+#from FinalProject.Effects.Filter import Bandpass, Lowpass
+#from FinalProject.Effects.Modulation import Chorus, Delay, Vibrato
+#from FinalProject.Engine.Synth import AdditiveSynth, WavetableSynth
 
 # This is the parser that will parse commandline arguments.
 parser = argparse.ArgumentParser()
@@ -21,10 +22,19 @@ def define_args():
                                    'wav file. Ex: finalsynth -r IR.wav')
     parser.add_argument('-rx', type=int, help='Provide the blend percentage for the reverb effect. '
                                               'Ex: finalsynth -r IR.wav -rx 50')
+    parser.add_argument('-krn', help='Provide the name of the input file in kern format'
+                                   '. Ex: finalsynth -krn melody1.krn')
     return parser.parse_args()
 
 
 if __name__ == '__main__':
     args = define_args()
-
     print(args)
+
+    KrnParser(args.krn)
+    print('noteNames=', noteNames)
+    print('freqs=', freqs)
+    print('amps=', amps)
+    print('startTimes=', startTimes)
+    print('durations=', durations)
+    print('endTimes=', endTimes)
