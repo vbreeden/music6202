@@ -18,11 +18,13 @@ parser = argparse.ArgumentParser()
 # Custom arguments are added here. By default, argparse provides a Help argument. It can be accessed using:
 # python finalsynth.py -h
 def define_args():
+    parser.add_argument('-l', '--lowpass', nargs='+', action='append', help='Add a lowpass filter to the signal path.'
+                                                                            'Ex: finalsynth -l 100Hz')
     parser.add_argument('-r', '--reverb', nargs='+', action='append', help='Add a reverb effect to the signal path '
                                                                            'that utilizes a provided impulse response '
                                                                            'wav file. Ex: finalsynth -r IR.wav')
     parser.add_argument('-k', '--kern', nargs='+', action='append', help='Provide the name of the input file in kern '
-                                                                         'format. Ex: finalsynth -krn melody1.krn')
+                                                                         'format. Ex: finalsynth -k melody1.krn')
     return parser.parse_args()
 
 
