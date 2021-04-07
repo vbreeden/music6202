@@ -70,7 +70,7 @@ def triangle_wave(samples, peak_amp):
     wave = np.zeros(samples)
 
     # Construct a triangle wave that ensures first and last samples are zero.
-    # If an array of odd sample length is requested ensure that the midpoint equals the peak amplitude.
+    # If an array of odd sample length is requested ensure that the midpoint equals the peak amplitudes.
     for i in range(int(samples/2)):
         wave[i] = i*np.tan(theta)
         wave[samples - 1 - i] = i*np.tan(theta)

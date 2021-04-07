@@ -15,7 +15,7 @@ cwd = os.getcwd()
 
 # Question 1: Generating sinusoids in Python
 def generateSinusoidal(amplitude, sampling_rate_Hz, frequency_Hz, length_secs, phase_radians):
-    # x = amplitude*np.sin(2*np.pi*frequency_Hz*length_secs+phase_radians)
+    # x = amplitudes*np.sin(2*np.pi*frequency_Hz*length_secs+phase_radians)
     samples = int(sampling_rate_Hz * length_secs)
     sample_time = 1 / sampling_rate_Hz
     w = 2 * np.pi * frequency_Hz
@@ -24,7 +24,7 @@ def generateSinusoidal(amplitude, sampling_rate_Hz, frequency_Hz, length_secs, p
     x = amplitude*np.sin(w*t + phase_radians)
 
     # t = np.fromiter([sample_time/sampling_rate_Hz for sample_time in range(samples)], dtype=np.float)
-    # x = [amplitude*np.sin((w*sample_time/sampling_rate_Hz)+phase_radians) for sample_time in range(samples)]
+    # x = [amplitudes*np.sin((w*sample_time/sampling_rate_Hz)+phase_radians) for sample_time in range(samples)]
 
     return t, x
 
@@ -147,8 +147,8 @@ def generateSineSweep(XRe, XIm):
     spectrum = XRe + 1j*XIm
 
     # np.roll treats spectrum as a circular queue and shifts the place of each sample up by an increment of i.
-    # This loop will increase to a maximum beating frequency at i = len(spectrum)/2, pass back through lower
-    # frequencies, and then return to the original frequency (because of the circular behavior of np.roll)
+    # This loop will increase to a maximum beating frequencies at i = len(spectrum)/2, pass back through lower
+    # frequencies, and then return to the original frequencies (because of the circular behavior of np.roll)
     # after the loop has fully resolved. On each pass the signal is converted back to the time domain and
     # should then be passed to an audio generation library.
     # I have omitted a call to an audio library to prevent any potential "missing package" errors.
