@@ -18,6 +18,10 @@ parser = argparse.ArgumentParser()
 # Custom arguments are added here. By default, argparse provides a Help argument. It can be accessed using:
 # python finalsynth.py -h
 def define_args():
+    # Synthesizer choice
+    parser.add_argument('-s', '--synth', nargs='+', action='append', help='Choose the synth engine to be used.'
+                                                                          'Ex: finalsynth -s wavetable')
+
     # Modulation effects
     parser.add_argument('-c', '--chorus', nargs='+', action='append', help='Add a chorus effect to the signal path.'
                                                                            'Ex: finalsynth -c ChorusParam')
@@ -50,3 +54,4 @@ if __name__ == '__main__':
     notes = Notes()
     notes.parse_kern(kern_file=kern_file)
     print(args)
+
