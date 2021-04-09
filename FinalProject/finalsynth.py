@@ -14,7 +14,6 @@ from FinalProject.Engine.AudioCore import Notes
 # This is the parser that will parse commandline arguments.
 parser = argparse.ArgumentParser()
 
-
 # Custom arguments are added here. By default, argparse provides a Help argument. It can be accessed using:
 # python finalsynth.py -h
 def define_args():
@@ -51,7 +50,23 @@ if __name__ == '__main__':
 
     args = define_args()
     kern_file = args.kern[0][0]
+
+    synth = args.synth[0][0]
+
     notes = Notes()
     notes.parse_kern(kern_file=kern_file)
+
+    if synth == 'wavetable':
+        # Call wavetable synth
+        pass
+    elif synth == 'additive':
+        # Call additive synth
+        pass
+    else:
+        print('No valid synthesizer provided.')
+        exit(0)
+
+    # This line exists as a convenient place to put a breakpoint for inspecting stored data. It will need
+    # to be removed before delivery.
     print(args)
 
