@@ -46,9 +46,35 @@ def define_args():
     return parser.parse_args()
 
 
+# Get the list of effects chosen by the user.
+def get_effects_list():
+    # sys.argv contains the full command in list form that was called by the user. We can loop through it looking for
+    # effects flags.
+    # It's not elegant, but it works.
+
+    arg_list = []
+    for arg in sys.argv:
+        if arg == '-c' or arg == '--chorus':
+            arg_list.append('chorus')
+        elif arg == '-d' or arg == '--delay':
+            arg_list.append('delay')
+        elif arg == '-v' or arg == '--vibrato':
+            arg_list.append('vibrato')
+        elif arg == '-b' or arg == '--bandpass':
+            arg_list.append('bandpass')
+        elif arg == '-l' or arg == '--lowpass':
+            arg_list.append('lowpass')
+        elif arg == '-r' or arg == '--reverb':
+            arg_list.append('reverb')
+
+    return arg_list
+
+
 if __name__ == '__main__':
 
     args = define_args()
+    effects_list = get_effects_list()
+
     kern_file = args.kern[0][0]
 
     synth = args.synth[0][0]
@@ -56,15 +82,60 @@ if __name__ == '__main__':
     notes = Notes()
     notes.parse_kern(kern_file=kern_file)
 
-    if synth == 'wavetable':
+    args_ordered = sys.argv
+
+    # Use the synth engine selected by the user to digitize the melody from the kern file.
+    if synth.lower() == 'wavetable':
         # Call wavetable synth
-        pass
-    elif synth == 'additive':
+        print('We will want to return the created audio data to this point so we can pass it through the effects')
+    elif synth.lower() == 'additive':
         # Call additive synth
-        pass
+        print('We will want to return the created audio data to this point so we can pass it through the effects')
     else:
-        print('No valid synthesizer provided.')
+        print('Additive and Wavetable are the only valid synthesizer options.')
         exit(0)
+
+    chorus_count = 0
+    delay_count = 0
+    vibrato_count = 0
+    bandpass_count = 0
+    lowpass_count = 0
+    reverb_count = 0
+
+    # Loop through the effects selected by the user and apply them to the melody in order.
+    for effect in effects_list:
+        if effect == 'chorus':
+            chorus_arg_list = args.chorus[chorus_count]
+            chorus_count += 1
+            print('put chorus call here.')
+            print(chorus_arg_list)
+        elif effect == 'delay':
+            delay_arg_list = args.delay[delay_count]
+            delay_count += 1
+            print('put delay call here.')
+            print(delay_arg_list)
+        elif effect == 'vibrato':
+            vibrato_arg_list = args.vibrato[vibrato_count]
+            vibrato_count += 1
+            print('put vibrato call here.')
+            print(vibrato_arg_list)
+        elif effect == 'bandpass':
+            bandpass_arg_list = args.bandpass[bandpass_count]
+            bandpass_count += 1
+            print('put bandpass call here.')
+            print(bandpass_arg_list)
+        elif effect == 'lowpass':
+            lowpass_arg_list = args.lowpass[lowpass_count]
+            lowpass_count += 1
+            print('put lowpass call here.')
+            print(lowpass_arg_list)
+        elif effect == 'reverb':
+            reverb_arg_list = args.reverb[reverb_count]
+            reverb_count += 1
+            print('put reverb call here.')
+            print(reverb_arg_list)
+
+    # Put the down-sample and write-to-audio call here.
 
     # This line exists as a convenient place to put a breakpoint for inspecting stored data. It will need
     # to be removed before delivery.
