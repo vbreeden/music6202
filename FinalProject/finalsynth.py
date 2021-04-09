@@ -71,13 +71,24 @@ def get_effects_list():
 
 
 if __name__ == '__main__':
-
+    # Retrieve the argument information
     args = define_args()
     effects_list = get_effects_list()
 
-    kern_file = args.kern[0][0]
+    # The kern file declaration is here to prevent the debugger from posting any undeclared-variable warnings.
+    kern_file = ''
+    if args.kern is not None:
+        kern_file = args.kern[0][0]
+    else:
+        print('A kern file must be passed to the synthesizer.')
+        exit(0)
 
-    synth = args.synth[0][0]
+    synth = ''
+    if args.synth is not None:
+        synth = args.synth[0][0]
+    else:
+        print('A synth engine must be selected.')
+        exit(0)
 
     notes = Notes()
     notes.parse_kern(kern_file=kern_file)
@@ -103,6 +114,10 @@ if __name__ == '__main__':
     reverb_count = 0
 
     # Loop through the effects selected by the user and apply them to the melody in order.
+    # The arg_list lists will contain the list of arguments passed in by the user that are associated with that
+    # instance of that argument. This is the cleanest way I could come up with to separate multiple instances of an
+    # Effect. For example, if the user inserts a low pass filter more than once then args.lowpass[0] will have the
+    # arguments for the first lowpass filter, and args.lowpass[1] will have the arguments for the second lowpass filter.
     for effect in effects_list:
         if effect == 'chorus':
             chorus_arg_list = args.chorus[chorus_count]
@@ -135,7 +150,7 @@ if __name__ == '__main__':
             print('put reverb call here.')
             print(reverb_arg_list)
 
-    # Put the down-sample and write-to-audio call here.
+    # Down-sample and write-to-audio function calls should be placed here.
 
     # This line exists as a convenient place to put a breakpoint for inspecting stored data. It will need
     # to be removed before delivery.
