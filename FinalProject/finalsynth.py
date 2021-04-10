@@ -6,6 +6,7 @@
 import sys
 import argparse
 from FinalProject.Engine.AudioCore import Notes
+from FinalProject.Engine.Synth import AdditiveSynth
 # from FinalProject.Effects.Convolution import Reverb
 # from FinalProject.Effects.Filter import Bandpass, Lowpass
 # from FinalProject.Effects.Modulation import Chorus, Delay, Vibrato
@@ -101,7 +102,9 @@ if __name__ == '__main__':
         print('We will want to return the created audio data to this point so we can pass it through the effects')
     elif synth.lower() == 'additive':
         # Call additive synth
-        print('We will want to return the created audio data to this point so we can pass it through the effects')
+        # print('We will want to return the created audio data to this point so we can pass it through the effects')
+        addSynth = AdditiveSynth()
+        addSynth.generate_additive_wav(notes)
     else:
         print('Additive and Wavetable are the only valid synthesizer options.')
         exit(0)
