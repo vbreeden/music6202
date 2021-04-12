@@ -5,6 +5,7 @@ import numpy as np
 
 SAMPLE_RATE = 48000
 
+
 @dataclass
 class AdditiveSynth:
     wave_file_path: str = ''
