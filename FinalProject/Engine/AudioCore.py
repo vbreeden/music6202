@@ -27,7 +27,7 @@ class Notes:
     def parse_kern(self, kern_file):
         self.kern_file = kern_file
 
-        stream = converter.parse(self.kern_file)
+        stream = converter.parse('KernFiles/' + self.kern_file)
         stream_flat = stream.flat
 
         i = 0
