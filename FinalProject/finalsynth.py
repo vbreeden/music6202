@@ -5,7 +5,8 @@
 # Rhythm Jain
 import sys
 import argparse
-from FinalProject.Engine.AudioCore import Notes
+from Engine.AudioCore import Notes
+from Engine.Synth import AdditiveSynth
 # from FinalProject.Effects.Convolution import Reverb
 # from FinalProject.Effects.Filter import Bandpass, Lowpass
 # from FinalProject.Effects.Modulation import Chorus, Delay, Vibrato
@@ -20,6 +21,9 @@ def define_args():
     # Synthesizer choice
     parser.add_argument('-s', '--synth', nargs='+', action='append', help='Choose the synth engine to be used.'
                                                                           'Ex: finalsynth -s wavetable')
+    # Type of additive synthesizer
+    parser.add_argument('-t', '--type', nargs='+', action='append', help='Choose type of additive synthesis (square or sine).'
+                                                                          'Ex: finalsynth -s additive -t sine')
 
     # Modulation effects
     parser.add_argument('-c', '--chorus', nargs='+', action='append', help='Add a chorus effect to the signal path.'
@@ -90,6 +94,10 @@ if __name__ == '__main__':
         print('A synth engine must be selected.')
         exit(0)
 
+    type = ''
+    if args.synth is not None:
+        type = args.type[0][0]
+
     notes = Notes()
     notes.parse_kern(kern_file=kern_file)
 
@@ -101,7 +109,9 @@ if __name__ == '__main__':
         print('We will want to return the created audio data to this point so we can pass it through the effects')
     elif synth.lower() == 'additive':
         # Call additive synth
-        print('We will want to return the created audio data to this point so we can pass it through the effects')
+        # print('We will want to return the created audio data to this point so we can pass it through the effects')
+        addSynth = AdditiveSynth()
+        addSynth.generate_additive_wav(notes,type)
     else:
         print('Additive and Wavetable are the only valid synthesizer options.')
         exit(0)
@@ -155,4 +165,5 @@ if __name__ == '__main__':
     # This line exists as a convenient place to put a breakpoint for inspecting stored data. It will need
     # to be removed before delivery.
     print(args)
+
 
