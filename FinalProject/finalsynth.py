@@ -5,26 +5,154 @@
 # Rhythm Jain
 import sys
 import argparse
-from FinalProject.Effects.Convolution import Reverb
-from FinalProject.Effects.Filter import Bandpass, Lowpass
-from FinalProject.Effects.Modulation import Chorus, Delay, Vibrato
-from FinalProject.Engine.Synth import AdditiveSynth, WavetableSynth
+from FinalProject.Engine.AudioCore import Notes
+# from FinalProject.Effects.Convolution import Reverb
+# from FinalProject.Effects.Filter import Bandpass, Lowpass
+# from FinalProject.Effects.Modulation import Chorus, Delay, Vibrato
+# from FinalProject.Engine.Synth import AdditiveSynth, WavetableSynth
 
 # This is the parser that will parse commandline arguments.
 parser = argparse.ArgumentParser()
 
-
 # Custom arguments are added here. By default, argparse provides a Help argument. It can be accessed using:
 # python finalsynth.py -h
 def define_args():
-    parser.add_argument('-r', help='Add a reverb effect to the signal path that utilizes a provided impulse response '
-                                   'wav file. Ex: finalsynth -r IR.wav')
-    parser.add_argument('-rx', type=int, help='Provide the blend percentage for the reverb effect. '
-                                              'Ex: finalsynth -r IR.wav -rx 50')
+    # Synthesizer choice
+    parser.add_argument('-s', '--synth', nargs='+', action='append', help='Choose the synth engine to be used.'
+                                                                          'Ex: finalsynth -s wavetable')
+
+    # Modulation effects
+    parser.add_argument('-c', '--chorus', nargs='+', action='append', help='Add a chorus effect to the signal path.'
+                                                                           'Ex: finalsynth -c ChorusParam')
+    parser.add_argument('-d', '--delay', nargs='+', action='append', help='Add a delay effect to the signal path.'
+                                                                          'Ex: finalsynth -d DelayParam')
+    parser.add_argument('-v', '--vibrato', nargs='+', action='append', help='Add a chorus vibrato to the signal path.'
+                                                                            'Ex: finalsynth -v VibratoParam')
+
+    # Filters
+    parser.add_argument('-b', '--bandpass', nargs='+', action='append', help='Add a bandpass filter to the signal path.'
+                                                                             'Ex: finalsynth -b 400Hz 500Hz')
+    parser.add_argument('-l', '--lowpass', nargs='+', action='append', help='Add a lowpass filter to the signal path.'
+                                                                            'Ex: finalsynth -l 100Hz')
+
+    # Convolution effects
+    parser.add_argument('-r', '--reverb', nargs='+', action='append', help='Add a reverb effect to the signal path '
+                                                                           'that utilizes a provided impulse response '
+                                                                           'wav file. Ex: finalsynth -r IR.wav')
+
+    # Kern files
+    parser.add_argument('-k', '--kern', nargs='+', action='append', help='Provide the name of the input file in kern '
+                                                                         'format. Ex: finalsynth -k melody1.krn')
     return parser.parse_args()
 
 
-if __name__ == '__main__':
-    args = define_args()
+# Get the list of effects chosen by the user.
+def get_effects_list():
+    # sys.argv contains the full command in list form that was called by the user. We can loop through it looking for
+    # effects flags.
+    # It's not elegant, but it works.
 
+    arg_list = []
+    for arg in sys.argv:
+        if arg == '-c' or arg == '--chorus':
+            arg_list.append('chorus')
+        elif arg == '-d' or arg == '--delay':
+            arg_list.append('delay')
+        elif arg == '-v' or arg == '--vibrato':
+            arg_list.append('vibrato')
+        elif arg == '-b' or arg == '--bandpass':
+            arg_list.append('bandpass')
+        elif arg == '-l' or arg == '--lowpass':
+            arg_list.append('lowpass')
+        elif arg == '-r' or arg == '--reverb':
+            arg_list.append('reverb')
+
+    return arg_list
+
+
+if __name__ == '__main__':
+    # Retrieve the argument information
+    args = define_args()
+    effects_list = get_effects_list()
+
+    # The kern file declaration is here to prevent the debugger from posting any undeclared-variable warnings.
+    kern_file = ''
+    if args.kern is not None:
+        kern_file = args.kern[0][0]
+    else:
+        print('A kern file must be passed to the synthesizer.')
+        exit(0)
+
+    synth = ''
+    if args.synth is not None:
+        synth = args.synth[0][0]
+    else:
+        print('A synth engine must be selected.')
+        exit(0)
+
+    notes = Notes()
+    notes.parse_kern(kern_file=kern_file)
+
+    args_ordered = sys.argv
+
+    # Use the synth engine selected by the user to digitize the melody from the kern file.
+    if synth.lower() == 'wavetable':
+        # Call wavetable synth
+        print('We will want to return the created audio data to this point so we can pass it through the effects')
+    elif synth.lower() == 'additive':
+        # Call additive synth
+        print('We will want to return the created audio data to this point so we can pass it through the effects')
+    else:
+        print('Additive and Wavetable are the only valid synthesizer options.')
+        exit(0)
+
+    chorus_count = 0
+    delay_count = 0
+    vibrato_count = 0
+    bandpass_count = 0
+    lowpass_count = 0
+    reverb_count = 0
+
+    # Loop through the effects selected by the user and apply them to the melody in order.
+    # The arg_list lists will contain the list of arguments passed in by the user that are associated with that
+    # instance of that argument. This is the cleanest way I could come up with to separate multiple instances of an
+    # Effect. For example, if the user inserts a low pass filter more than once then args.lowpass[0] will have the
+    # arguments for the first lowpass filter, and args.lowpass[1] will have the arguments for the second lowpass filter.
+    for effect in effects_list:
+        if effect == 'chorus':
+            chorus_arg_list = args.chorus[chorus_count]
+            chorus_count += 1
+            print('put chorus call here.')
+            print(chorus_arg_list)
+        elif effect == 'delay':
+            delay_arg_list = args.delay[delay_count]
+            delay_count += 1
+            print('put delay call here.')
+            print(delay_arg_list)
+        elif effect == 'vibrato':
+            vibrato_arg_list = args.vibrato[vibrato_count]
+            vibrato_count += 1
+            print('put vibrato call here.')
+            print(vibrato_arg_list)
+        elif effect == 'bandpass':
+            bandpass_arg_list = args.bandpass[bandpass_count]
+            bandpass_count += 1
+            print('put bandpass call here.')
+            print(bandpass_arg_list)
+        elif effect == 'lowpass':
+            lowpass_arg_list = args.lowpass[lowpass_count]
+            lowpass_count += 1
+            print('put lowpass call here.')
+            print(lowpass_arg_list)
+        elif effect == 'reverb':
+            reverb_arg_list = args.reverb[reverb_count]
+            reverb_count += 1
+            print('put reverb call here.')
+            print(reverb_arg_list)
+
+    # Down-sample and write-to-audio function calls should be placed here.
+
+    # This line exists as a convenient place to put a breakpoint for inspecting stored data. It will need
+    # to be removed before delivery.
     print(args)
+
