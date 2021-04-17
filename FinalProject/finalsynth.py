@@ -6,7 +6,7 @@
 import sys
 import argparse
 from Engine.AudioCore import Notes
-from Engine.Synth import AdditiveSynth
+from Engine.Synth import AdditiveSynth, WavetableSynth
 # from FinalProject.Effects.Convolution import Reverb
 # from FinalProject.Effects.Filter import Bandpass, Lowpass
 # from FinalProject.Effects.Modulation import Chorus, Delay, Vibrato
@@ -19,11 +19,22 @@ parser = argparse.ArgumentParser()
 # python finalsynth.py -h
 def define_args():
     # Synthesizer choice
-    parser.add_argument('-s', '--synth', nargs='+', action='append', help='Choose the synth engine to be used.'
+    parser.add_argument('-s', '--synth', nargs='+', action='append', help='Choose the synth engine to be used (wavetable or additive).'
                                                                           'Ex: finalsynth -s wavetable')
     # Type of additive synthesizer
     parser.add_argument('-t', '--type', nargs='+', action='append', help='Choose type of additive synthesis (square or sine).'
                                                                           'Ex: finalsynth -s additive -t sine')
+
+    # Starting timbre of wavetable synthesizer
+    parser.add_argument('-m', '--timbre', nargs='+', action='append',
+                        help='Choose starting timbre of wavetable synth (integer from 0=pure square to 10=pure sine).'
+                             'Ex: finalsynth -s wavetable -m 5')
+    parser.add_argument('-w', '--sweep', nargs='+', action='append',
+                        help='Choose whether to sweeep wavetable modulating between sine and square (static or sweep).'
+                             'Ex: finalsynth -s wavetable -m 5 -w sweep')
+    parser.add_argument('-p', '--speed', nargs='+', action='append',
+                        help='Speed of sweep: amount of time in seconds to modulate between sine and square.'
+                             'Ex: finalsynth -s wavetable -m 5 -w sweep -p .5')
 
     # Modulation effects
     parser.add_argument('-c', '--chorus', nargs='+', action='append', help='Add a chorus effect to the signal path.'
@@ -77,6 +88,7 @@ def get_effects_list():
 if __name__ == '__main__':
     # Retrieve the argument information
     args = define_args()
+    print(args)
     effects_list = get_effects_list()
 
     # The kern file declaration is here to prevent the debugger from posting any undeclared-variable warnings.
@@ -95,8 +107,14 @@ if __name__ == '__main__':
         exit(0)
 
     type = ''
-    if args.synth is not None:
+    #if args.synth is not None:
+    if synth == 'additive':
         type = args.type[0][0]
+
+    if synth == 'wavetable':
+        timbre = int(args.timbre[0][0])
+        sweep = args.sweep[0][0]
+        #print('timbre=',timbre)
 
     notes = Notes()
     notes.parse_kern(kern_file=kern_file)
@@ -105,8 +123,9 @@ if __name__ == '__main__':
 
     # Use the synth engine selected by the user to digitize the melody from the kern file.
     if synth.lower() == 'wavetable':
-        # Call wavetable synth
-        print('We will want to return the created audio data to this point so we can pass it through the effects')
+        addSynth = WavetableSynth()
+        addSynth.generate_wavetable(notes,timbre,sweep)
+        #print('We will want to return the created audio data to this point so we can pass it through the effects')
     elif synth.lower() == 'additive':
         # Call additive synth
         # print('We will want to return the created audio data to this point so we can pass it through the effects')
