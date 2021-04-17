@@ -147,7 +147,8 @@ class WavetableSynth:
                     #pick correct single cycle from wavetable
                     single_cycle = amplitude * wavetable[index][timbre]
                     #extend to note length
-                    x_note = np.resize(single_cycle, num_samples_note).astype(np.float32)
+                    x_curr = np.resize(single_cycle, num_samples_note).astype(np.float32)
+                    x = self.wave.extend(x_curr)
                 elif (sweep=='sweep'):
                     speed = 0.5 # amount of time in secs to complete one L-R sweep across wavetable
                     tb = timbre #initialize timbre
