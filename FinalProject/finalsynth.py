@@ -5,6 +5,7 @@
 # Rhythm Jain
 import sys
 import argparse
+import numpy as np
 from Engine.AudioCore import Notes
 from Engine.Synth import AdditiveSynth, WavetableSynth
 # from FinalProject.Effects.Convolution import Reverb
@@ -117,11 +118,13 @@ if __name__ == '__main__':
 
     elif synth == 'wavetable':
         if len(args.synth[0]) >= 3:
-            timbre = int(args.synth[0][1])
+            timbre = np.abs(int(args.synth[0][1]))
+            if timbre > 10:
+                timbre = 10  # Gracefully accept any number, but cap it at 10.
             sweep = str(args.synth[0][2]).lower()
             if sweep.lower() == 'sweep':
                 if len(args.synth[0]) >= 4:
-                    speed = float(args.synth[0][3])
+                    speed = np.abs(float(args.synth[0][3]))
                 else:
                     print('When passing a sweeping signal, a sweep period must be provided.')
                     exit(0)
