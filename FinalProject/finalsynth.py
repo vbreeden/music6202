@@ -5,8 +5,9 @@
 # Rhythm Jain
 import sys
 import argparse
+import numpy as np
 from Engine.AudioCore import Notes
-from Engine.Synth import AdditiveSynth
+from Engine.Synth import AdditiveSynth, WavetableSynth
 # from FinalProject.Effects.Convolution import Reverb
 # from FinalProject.Effects.Filter import Bandpass, Lowpass
 # from FinalProject.Effects.Modulation import Chorus, Delay, Vibrato
@@ -15,15 +16,28 @@ from Engine.Synth import AdditiveSynth
 # This is the parser that will parse commandline arguments.
 parser = argparse.ArgumentParser()
 
+
 # Custom arguments are added here. By default, argparse provides a Help argument. It can be accessed using:
 # python finalsynth.py -h
 def define_args():
     # Synthesizer choice
-    parser.add_argument('-s', '--synth', nargs='+', action='append', help='Choose the synth engine to be used.'
-                                                                          'Ex: finalsynth -s wavetable')
+    parser.add_argument('-s', '--synth', nargs='+', action='append',
+                        help='Choose the synth engine to be used (wavetable or additive) and pass in the appropriate '
+                             'parameters. Ex: finalsynth -s wavetable 5 sweep 0.75')
     # Type of additive synthesizer
-    parser.add_argument('-t', '--type', nargs='+', action='append', help='Choose type of additive synthesis (square or sine).'
-                                                                          'Ex: finalsynth -s additive -t sine')
+    # parser.add_argument('-t', '--type', nargs='+', action='append',
+    #                     help='Choose type of additive synthesis (square or sine). Ex: finalsynth -s additive -t sine')
+
+    # Starting timbre of wavetable synthesizer
+    # parser.add_argument('-m', '--timbre', nargs='+', action='append',
+    #                     help='Choose starting timbre of wavetable synth (integer from 0=pure square to 10=pure sine).'
+    #                          'Ex: finalsynth -s wavetable -m 5')
+    # parser.add_argument('-w', '--sweep', nargs='+', action='append',
+    # help='Choose whether to sweep wavetable modulating between sine and square (static or sweep).'
+    #                          'Ex: finalsynth -s wavetable -m 5 -w sweep')
+    # parser.add_argument('-p', '--speed', nargs='+', action='append',
+    #                     help='Speed of sweep: amount of time in seconds to modulate between sine and square.'
+    #                          'Ex: finalsynth -s wavetable -m 5 -w sweep -p .5')
 
     # Modulation effects
     parser.add_argument('-c', '--chorus', nargs='+', action='append', help='Add a chorus effect to the signal path.'
@@ -77,6 +91,7 @@ def get_effects_list():
 if __name__ == '__main__':
     # Retrieve the argument information
     args = define_args()
+    print(args)
     effects_list = get_effects_list()
 
     # The kern file declaration is here to prevent the debugger from posting any undeclared-variable warnings.
@@ -94,9 +109,34 @@ if __name__ == '__main__':
         print('A synth engine must be selected.')
         exit(0)
 
-    type = ''
-    if args.synth is not None:
-        type = args.type[0][0]
+    if synth == 'additive':
+        print('Do additive stuff here.')
+        type = str(args.synth[0][1]).lower()
+        if type != 'square' and type != 'sine':
+            print("The only valid additive synthesizer types are 'square' and 'sine'.")
+        # type = args.type[0][0]
+
+    elif synth == 'wavetable':
+        if len(args.synth[0]) >= 3:
+            timbre = np.abs(int(args.synth[0][1]))
+            if timbre > 10:
+                timbre = 10  # Gracefully accept any number, but cap it at 10.
+            sweep = str(args.synth[0][2]).lower()
+            if sweep.lower() == 'sweep':
+                if len(args.synth[0]) >= 4:
+                    speed = np.abs(float(args.synth[0][3]))
+                else:
+                    print('When passing a sweeping signal, a sweep period must be provided.')
+                    exit(0)
+            else:
+                speed = 0
+        else:
+            print('The timbre value and sweep/static arguments must be passed with the wavetable.')
+            print("If 'sweep' is passed as a parameter, a sweep period must also be passed.")
+            exit(0)
+    else:
+        print('Only additive and wavetable synths are supported.')
+        exit(0)
 
     notes = Notes()
     notes.parse_kern(kern_file=kern_file)
@@ -105,13 +145,14 @@ if __name__ == '__main__':
 
     # Use the synth engine selected by the user to digitize the melody from the kern file.
     if synth.lower() == 'wavetable':
-        # Call wavetable synth
-        print('We will want to return the created audio data to this point so we can pass it through the effects')
+        synthesizer = WavetableSynth()
+        synthesizer.generate_wavetable(notes, timbre, sweep, speed)
+        # print('We will want to return the created audio data to this point so we can pass it through the effects')
     elif synth.lower() == 'additive':
         # Call additive synth
         # print('We will want to return the created audio data to this point so we can pass it through the effects')
-        addSynth = AdditiveSynth()
-        addSynth.generate_additive_wav(notes,type)
+        synthesizer = AdditiveSynth()
+        synthesizer.generate_additive_wav(notes, type)
     else:
         print('Additive and Wavetable are the only valid synthesizer options.')
         exit(0)
