@@ -8,7 +8,7 @@ import argparse
 import numpy as np
 from Engine.AudioCore import Notes
 from Engine.Synth import AdditiveSynth, WavetableSynth
-# from FinalProject.Effects.Convolution import Reverb
+from FinalProject.Effects.Convolution import Reverb
 # from FinalProject.Effects.Filter import Bandpass, Lowpass
 # from FinalProject.Effects.Modulation import Chorus, Delay, Vibrato
 # from FinalProject.Engine.Synth import AdditiveSynth, WavetableSynth
@@ -138,6 +138,9 @@ if __name__ == '__main__':
         print('Only additive and wavetable synths are supported.')
         exit(0)
 
+    if args.reverb is not None:
+        reverb = Reverb()
+
     notes = Notes()
     notes.parse_kern(kern_file=kern_file)
 
@@ -197,6 +200,17 @@ if __name__ == '__main__':
             print(lowpass_arg_list)
         elif effect == 'reverb':
             reverb_arg_list = args.reverb[reverb_count]
+
+            if str(reverb_arg_list[0]) == 'big_hall':
+                reverb.apply_reverb(synthesizer.wave, 'big_hall.wav')
+            elif str(reverb_arg_list[0]) == 'big_room':
+                reverb.apply_reverb(synthesizer.wave, 'big_room.wav')
+            elif str(reverb_arg_list[0]) == 'box':
+                reverb.apply_reverb(synthesizer.wave, 'box.wav')
+            else:
+                print("'big_hall', 'big_room', and 'box' are the only reverbs currently available.")
+                exit(0)
+
             reverb_count += 1
             print('put reverb call here.')
             print(reverb_arg_list)
