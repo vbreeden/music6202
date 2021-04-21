@@ -11,6 +11,7 @@ from Engine.Synth import AdditiveSynth, WavetableSynth
 # from FinalProject.Effects.Convolution import Reverb
 # from FinalProject.Effects.Filter import Bandpass, Lowpass
 # from FinalProject.Effects.Modulation import Chorus, Delay, Vibrato
+from Effects.Modulation import Vibrato
 # from FinalProject.Engine.Synth import AdditiveSynth, WavetableSynth
 
 # This is the parser that will parse commandline arguments.
@@ -44,8 +45,8 @@ def define_args():
                                                                            'Ex: finalsynth -c ChorusParam')
     parser.add_argument('-d', '--delay', nargs='+', action='append', help='Add a delay effect to the signal path.'
                                                                           'Ex: finalsynth -d DelayParam')
-    parser.add_argument('-v', '--vibrato', nargs='+', action='append', help='Add a chorus vibrato to the signal path.'
-                                                                            'Ex: finalsynth -v VibratoParam')
+    parser.add_argument('-v', '--vibrato', nargs='+', action='append', help='Add a vibrato to the signal path. Pass in max delay samples and frequency modulation.'
+                                                                            'Ex: finalsynth -v 200 1')
 
     # Filters
     parser.add_argument('-b', '--bandpass', nargs='+', action='append', help='Add a bandpass filter to the signal path.'
@@ -138,6 +139,9 @@ if __name__ == '__main__':
         print('Only additive and wavetable synths are supported.')
         exit(0)
 
+    if args.vibrato is not None:
+        vibrato = Vibrato()
+
     notes = Notes()
     notes.parse_kern(kern_file=kern_file)
 
@@ -181,7 +185,17 @@ if __name__ == '__main__':
             print('put delay call here.')
             print(delay_arg_list)
         elif effect == 'vibrato':
-            vibrato_arg_list = args.vibrato[vibrato_count]
+            if args.vibrato is not None:
+                vibrato_arg_list = args.vibrato[vibrato_count]
+                maxDelaySamps = int(vibrato_arg_list[0])
+                fmod = int(vibrato_arg_list[1])
+            #set default max delay and frequency modulation if no input parameters are provided
+            else:
+                maxDelaySamps = 50
+                fmod = 1
+            print('maxDelaySamps',maxDelaySamps)
+            print('fmod',fmod)
+            vibrato.apply_vibrato(synthesizer.wave, maxDelaySamps, fmod)
             vibrato_count += 1
             print('put vibrato call here.')
             print(vibrato_arg_list)

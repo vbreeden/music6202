@@ -22,13 +22,13 @@ class AdditiveSynth:
         amplitudes = notes.amplitudes
         durations = notes.durations
 
-        print('frequencies=', frequencies)
-        print('amplitudes=', amplitudes)
-        print('durations=', durations)
+        #print('frequencies=', frequencies)
+        #print('amplitudes=', amplitudes)
+        #print('durations=', durations)
 
         for i in range(len(frequencies)):
-            print("*** i=", i, "***")
-            print('frequencies[i], durations[i], amplitudes[i]=', frequencies[i], durations[i], amplitudes[i])
+            #print("*** i=", i, "***")
+            #print('frequencies[i], durations[i], amplitudes[i]=', frequencies[i], durations[i], amplitudes[i])
             if self.wave_type == 'sine':
                 self.wave.extend(self.add_sine_waves(frequencies[i], durations[i], amplitudes[i]))
                 # note: plots can be removed eventually, they are here temporarily to check the waveform shapes
@@ -117,9 +117,9 @@ class WavetableSynth:
         amplitudes = notes.amplitudes
         durations = notes.durations
 
-        print('frequencies=', frequencies)
-        print('amplitudes=', amplitudes)
-        print('durations=', durations)
+       # print('frequencies=', frequencies)
+       # print('amplitudes=', amplitudes)
+       # print('durations=', durations)
 
         # get list of unique frequencies in the kern file
         unique_freqs = np.unique(frequencies)
