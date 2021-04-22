@@ -13,6 +13,7 @@ from FinalProject.Effects.Convolution import Reverb
 # from FinalProject.Effects.Modulation import Chorus, Delay, Vibrato
 # from FinalProject.Engine.Synth import AdditiveSynth, WavetableSynth
 
+
 # This is the parser that will parse commandline arguments.
 parser = argparse.ArgumentParser()
 
@@ -207,6 +208,12 @@ if __name__ == '__main__':
                 reverb.apply_reverb(synthesizer.wave, 'big_room.wav')
             elif str(reverb_arg_list[0]) == 'box':
                 reverb.apply_reverb(synthesizer.wave, 'box.wav')
+            elif str(reverb_arg_list[0]) == 'drum_plate':
+                reverb.apply_reverb(synthesizer.wave, 'drum_plate.wav')
+            elif str(reverb_arg_list[0]) == 'jazz_hall':
+                reverb.apply_reverb(synthesizer.wave, 'jazz_hall.wav')
+            elif str(reverb_arg_list[0]) == 'wet_reverb':
+                reverb.apply_reverb(synthesizer.wave, 'wet_reverb.wav')
             else:
                 print("'big_hall', 'big_room', and 'box' are the only reverbs currently available.")
                 exit(0)
