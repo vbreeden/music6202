@@ -44,9 +44,7 @@ class Reverb:
         # conv_arr = irfft(convolution)
         # conv_arr *= .1
 
-        convolved_wave *= .05
-
-        # convolved_wave += (self.wave*.1)
+        convolved_wave *= .03
 
         write(self.wave_file_path + ".wav", SAMPLE_RATE, np.array(convolved_wave))
 
