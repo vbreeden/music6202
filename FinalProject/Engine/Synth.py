@@ -22,13 +22,13 @@ class AdditiveSynth:
         amplitudes = notes.amplitudes
         durations = notes.durations
 
-        print('frequencies=', frequencies)
-        print('amplitudes=', amplitudes)
-        print('durations=', durations)
+        # print('frequencies=', frequencies)
+        # print('amplitudes=', amplitudes)
+        # print('durations=', durations)
 
         for i in range(len(frequencies)):
-            print("*** i=", i, "***")
-            print('frequencies[i], durations[i], amplitudes[i]=', frequencies[i], durations[i], amplitudes[i])
+            # print("*** i=", i, "***")
+            # print('frequencies[i], durations[i], amplitudes[i]=', frequencies[i], durations[i], amplitudes[i])
             if self.wave_type == 'sine':
                 self.wave.extend(self.add_sine_waves(frequencies[i], durations[i], amplitudes[i]))
                 # note: plots can be removed eventually, they are here temporarily to check the waveform shapes
@@ -48,7 +48,7 @@ class AdditiveSynth:
                 plt.savefig('squareplot_subset.jpg')
                 plt.close()
             # print ('data type=',np.array(self.wave).dtype)
-        write(self.wave_file_path + ".wav", SAMPLE_RATE, np.array(self.wave))
+        # write(self.wave_file_path + ".wav", SAMPLE_RATE, np.array(self.wave))
 
         return self.wave
 
@@ -202,16 +202,16 @@ class WavetableSynth:
                 x = self.wave.extend(x_rest)
 
         plt.plot(self.wave)
-        plt.savefig('wavetableplot.jpg')
+        plt.savefig('./plots/wavetableplot.jpg')
         plt.close()
         plt.plot(self.wave[336000:338000])
-        plt.savefig('wavetableplot_subset.jpg')
+        plt.savefig('./plots/wavetableplot_subset.jpg')
         plt.close()
         plt.plot(self.wave[8000:10000])
-        plt.savefig('wavetableplot_subset2.jpg')
+        plt.savefig('./plots/wavetableplot_subset2.jpg')
         plt.close()
         plt.plot(self.wave[47000:49000])
-        plt.savefig('wavetableplot_subset3.jpg')
+        plt.savefig('./plots/wavetableplot_subset3.jpg')
         plt.close()
 
         write(self.wave_file_path + ".wav", SAMPLE_RATE, np.array(self.wave))

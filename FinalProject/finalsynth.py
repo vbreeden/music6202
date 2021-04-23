@@ -6,8 +6,11 @@
 import sys
 import argparse
 import numpy as np
-from Engine.AudioCore import Notes
+from math import ceil
+from Engine.AudioCore import Notes, Downsampler
 from Engine.Synth import AdditiveSynth, WavetableSynth
+from scipy.io.wavfile import read, write
+
 # from FinalProject.Effects.Convolution import Reverb
 # from FinalProject.Effects.Filter import Bandpass, Lowpass
 # from FinalProject.Effects.Modulation import Chorus, Delay, Vibrato
@@ -23,7 +26,7 @@ def define_args():
     # Synthesizer choice
     parser.add_argument('-s', '--synth', nargs='+', action='append',
                         help='Choose the synth engine to be used (wavetable or additive) and pass in the appropriate '
-                             'parameters. Ex: finalsynth -s wavetable 5 sweep 0.75')
+                             'parameters. Ex: finalsynth -s wavetable 5 sweep 0.75 (OR) finalsynth -s additive sine')
     # Type of additive synthesizer
     # parser.add_argument('-t', '--type', nargs='+', action='append',
     #                     help='Choose type of additive synthesis (square or sine). Ex: finalsynth -s additive -t sine')
@@ -61,6 +64,16 @@ def define_args():
     # Kern files
     parser.add_argument('-k', '--kern', nargs='+', action='append', help='Provide the name of the input file in kern '
                                                                          'format. Ex: finalsynth -k melody1.krn')
+
+    # Down-sample frequency 
+    parser.add_argument('-a', '--samplerate', nargs='+', action='append', help='Provide provide the desired sample rate '
+                                                                                'Ex: finalsynth -a 41000')
+    # Down-quantize bitrate
+    parser.add_argument('-q', '--bitrate', nargs='+', action='append', help='Provide the desired bit rate'
+                                                                                'Ex: finalsynth -q 16')
+    # Output file
+    parser.add_argument('-o', '--output', nargs='+', action='append', help='Provide the name of the output file in wav '
+                                                                                'Ex: finalsynth -o my_music.wav')
     return parser.parse_args()
 
 
@@ -84,6 +97,12 @@ def get_effects_list():
             arg_list.append('lowpass')
         elif arg == '-r' or arg == '--reverb':
             arg_list.append('reverb')
+        elif arg == '-a' or arg == '--samplerate':
+            arg_list.append('samplerate')
+        elif arg == '-q' or arg == '--bitrate':
+            arg_list.append('bitrate')
+        elif arg == '-o' or arg == '--output':
+            arg_list.append('output')   
 
     return arg_list
 
@@ -111,8 +130,8 @@ if __name__ == '__main__':
 
     if synth == 'additive':
         print('Do additive stuff here.')
-        type = str(args.synth[0][1]).lower()
-        if type != 'square' and type != 'sine':
+        add_synth_type = str(args.synth[0][1]).lower()
+        if add_synth_type != 'square' and add_synth_type != 'sine':
             print("The only valid additive synthesizer types are 'square' and 'sine'.")
         # type = args.type[0][0]
 
@@ -142,6 +161,7 @@ if __name__ == '__main__':
     notes.parse_kern(kern_file=kern_file)
 
     args_ordered = sys.argv
+    print("HERE",args_ordered)
 
     # Use the synth engine selected by the user to digitize the melody from the kern file.
     if synth.lower() == 'wavetable':
@@ -149,10 +169,9 @@ if __name__ == '__main__':
         synthesizer.generate_wavetable(notes, timbre, sweep, speed)
         # print('We will want to return the created audio data to this point so we can pass it through the effects')
     elif synth.lower() == 'additive':
-        # Call additive synth
-        # print('We will want to return the created audio data to this point so we can pass it through the effects')
         synthesizer = AdditiveSynth()
-        synthesizer.generate_additive_wav(notes, type)
+        synthesizer.generate_additive_wav(notes, add_synth_type)
+        # print('We will want to return the created audio data to this point so we can pass it through the effects')
     else:
         print('Additive and Wavetable are the only valid synthesizer options.')
         exit(0)
@@ -202,6 +221,42 @@ if __name__ == '__main__':
             print(reverb_arg_list)
 
     # Down-sample and write-to-audio function calls should be placed here.
+  
+
+    output = Downsampler()
+    res = synthesizer.wave
+
+    #debugging, remove later
+    file_path = 'sine.wav'
+    Fs, data = read(file_path)
+
+
+    # if args.samplerate is not None:
+    #     output.output_sample_rate = int(args.samplerate[0][0])
+
+    #     Fs = 48000
+    #     down_factor = ceil(Fs/float(output.output_sample_rate))
+    #     t = len(synthesizer.wave)/Fs
+    #     down_sampled_data = output.down_sample(synthesizer.wave, down_factor)
+    #     # print("down-",down_sampled_data)
+    #     res = output.up_sample(down_sampled_data, int(Fs/down_factor), output.output_sample_rate, t)
+
+
+    # output.output_sample_rate = int(args.samplerate[0][0])
+
+    Fs = 48000
+    down_factor = ceil(Fs/float(44100))
+    t = len(data)/Fs
+    output.output_sample_rate = 44100
+    down_sampled_data = output.down_sample(data, down_factor)
+    # print("down-",down_sampled_data)
+    res = output.up_sample(down_sampled_data, int(Fs/down_factor), output.output_sample_rate, t)
+
+    if args.bitrate is not None:
+        output.output_bit_rate = int(args.bitrate[0][0])
+        dq1 = output.down_quantization(res, 32, output.output_bit_rate)
+   
+    output.write_wav(args.output[0][0], dq1, output.output_sample_rate, output.output_bit_rate)
 
     # This line exists as a convenient place to put a breakpoint for inspecting stored data. It will need
     # to be removed before delivery.
