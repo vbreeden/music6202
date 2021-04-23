@@ -33,21 +33,9 @@ class AdditiveSynth:
                 self.wave.extend(self.add_sine_waves(frequencies[i], durations[i], amplitudes[i]))
                 # note: plots can be removed eventually, they are here temporarily to check the waveform shapes
                 # and overall amplitudes
-                plt.plot(self.wave)
-                plt.savefig('sineplot.jpg')
-                plt.close()
-                plt.plot(self.wave[0:1000])
-                plt.savefig('sineplot_subset.jpg')
-                plt.close()
             elif self.wave_type == 'square':
                 self.wave.extend(self.generate_square_wave(frequencies[i], durations[i], amplitudes[i]))
-                plt.plot(self.wave)
-                plt.savefig('squareplot.jpg')
-                plt.close()
-                plt.plot(self.wave[0:1000])
-                plt.savefig('squareplot_subset.jpg')
-                plt.close()
-            # print ('data type=',np.array(self.wave).dtype)
+        # print ('data type=',np.array(self.wave).dtype)
         # write(self.wave_file_path + ".wav", SAMPLE_RATE, np.array(self.wave))
 
         return self.wave
@@ -94,8 +82,11 @@ class AdditiveSynth:
         # rescale to prevent clipping
         # if num_harmonics > 1:
         # x = sumSines / (numHarmonics - 1)
-        x = amplitude * sum_sines/max(sum_sines)
 
+        # Condition to cater to the divide by zero case
+        flag = max(sum_sines) if max(sum_sines) else 1
+
+        x = amplitude * np.divide(sum_sines,flag)
         return x
 
 
@@ -202,16 +193,16 @@ class WavetableSynth:
                 x = self.wave.extend(x_rest)
 
         plt.plot(self.wave)
-        plt.savefig('./plots/wavetableplot.jpg')
+        plt.savefig('wavetableplot.jpg')
         plt.close()
         plt.plot(self.wave[336000:338000])
-        plt.savefig('./plots/wavetableplot_subset.jpg')
+        plt.savefig('wavetableplot_subset.jpg')
         plt.close()
         plt.plot(self.wave[8000:10000])
-        plt.savefig('./plots/wavetableplot_subset2.jpg')
+        plt.savefig('wavetableplot_subset2.jpg')
         plt.close()
         plt.plot(self.wave[47000:49000])
-        plt.savefig('./plots/wavetableplot_subset3.jpg')
+        plt.savefig('wavetableplot_subset3.jpg')
         plt.close()
 
         write(self.wave_file_path + ".wav", SAMPLE_RATE, np.array(self.wave))

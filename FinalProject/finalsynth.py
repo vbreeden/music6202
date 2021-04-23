@@ -10,6 +10,8 @@ from math import ceil
 from Engine.AudioCore import Notes, Downsampler
 from Engine.Synth import AdditiveSynth, WavetableSynth
 from scipy.io.wavfile import read, write
+import matplotlib.pyplot as plt
+
 
 # from FinalProject.Effects.Convolution import Reverb
 # from FinalProject.Effects.Filter import Bandpass, Lowpass
@@ -129,7 +131,6 @@ if __name__ == '__main__':
         exit(0)
 
     if synth == 'additive':
-        print('Do additive stuff here.')
         add_synth_type = str(args.synth[0][1]).lower()
         if add_synth_type != 'square' and add_synth_type != 'sine':
             print("The only valid additive synthesizer types are 'square' and 'sine'.")
@@ -161,7 +162,6 @@ if __name__ == '__main__':
     notes.parse_kern(kern_file=kern_file)
 
     args_ordered = sys.argv
-    print("HERE",args_ordered)
 
     # Use the synth engine selected by the user to digitize the melody from the kern file.
     if synth.lower() == 'wavetable':
@@ -226,38 +226,41 @@ if __name__ == '__main__':
     output = Downsampler()
     res = synthesizer.wave
 
-    #debugging, remove later
-    file_path = 'sine.wav'
-    Fs, data = read(file_path)
-
-
-    # if args.samplerate is not None:
-    #     output.output_sample_rate = int(args.samplerate[0][0])
-
-    #     Fs = 48000
-    #     down_factor = ceil(Fs/float(output.output_sample_rate))
-    #     t = len(synthesizer.wave)/Fs
-    #     down_sampled_data = output.down_sample(synthesizer.wave, down_factor)
-    #     # print("down-",down_sampled_data)
-    #     res = output.up_sample(down_sampled_data, int(Fs/down_factor), output.output_sample_rate, t)
-
+    # #debugging, remove later
+    # file_path = 'sine.wav'
+    # Fs, data = read(file_path)
 
     # output.output_sample_rate = int(args.samplerate[0][0])
 
-    Fs = 48000
-    down_factor = ceil(Fs/float(44100))
-    t = len(data)/Fs
-    output.output_sample_rate = 44100
-    down_sampled_data = output.down_sample(data, down_factor)
-    # print("down-",down_sampled_data)
-    res = output.up_sample(down_sampled_data, int(Fs/down_factor), output.output_sample_rate, t)
+    # Fs = 48000
+    # down_factor = ceil(Fs/float(44100))
+    # t = len(data)/Fs
+    # output.output_sample_rate = 44100
+    # down_sampled_data = output.down_sample(data, down_factor)
+    # # print("down-",down_sampled_data)
+    # res = output.up_sample(down_sampled_data, int(Fs/down_factor), output.output_sample_rate, t)
+
+
+    if args.samplerate is not None:
+        output.output_sample_rate = int(args.samplerate[0][0])
+
+        Fs = 48000
+        down_factor = ceil(Fs/float(output.output_sample_rate))
+        t = len(synthesizer.wave)/Fs
+        down_sampled_data = output.down_sample(synthesizer.wave, down_factor)
+        # print("down-",down_sampled_data)
+        res = output.up_sample(down_sampled_data, int(Fs/down_factor), output.output_sample_rate, t)
 
     if args.bitrate is not None:
         output.output_bit_rate = int(args.bitrate[0][0])
-        dq1 = output.down_quantization(res, 32, output.output_bit_rate)
-   
-    output.write_wav(args.output[0][0], dq1, output.output_sample_rate, output.output_bit_rate)
+        dq = output.down_quantization(res, 32, output.output_bit_rate)
+        plt.plot(dq)
+        plt.savefig('dq.jpg')
+        plt.close()
+        res= dq
 
+    output.write_wav(args.output[0][0], res, output.output_sample_rate, output.output_bit_rate)
+    
     # This line exists as a convenient place to put a breakpoint for inspecting stored data. It will need
     # to be removed before delivery.
     print(args)

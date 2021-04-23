@@ -79,16 +79,13 @@ class Downsampler:
     # write_wav : function to return a wav type output file based on the data and sample rate provided
     def write_wav(self, wave_file_path, data, fs = output_sample_rate, bitrate=output_bit_rate):
         subtype = Subtype().get_subtype(bitrate)
+        print("writing data:", data, "sampling-rate:", fs,  "at bit-rate:", bitrate, " to ", wave_file_path)
         write(wave_file_path, data, fs, subtype)
 
-    # Low pass filter (type of low pass: butter) to remove the frequencies above the Shannon Nyquist threshold
+    # Low pass filter (type of low pass: butter) : function to remove the frequencies above the Shannon Nyquist frequency
     def low_pass(self, data, factor):
-        # b, a = signal.butter(3, 11025, 'lowpass', analog=True)
-        # print(b, a)
-        print(type(factor))
-        b, a = signal.butter(3, 0.05, 'low')
+        b, a = signal.butter(3, 0.05, 'lowpass')
         filtered = signal.filtfilt(b, a, data)
-        print("filtered:", filtered)
         return filtered
 
     # downsample: function to return the down-sampled function based on the down-sampling factor
@@ -105,7 +102,7 @@ class Downsampler:
         xNew = np.linspace(0, t, num=num_samples, endpoint=True)
         return cs(xNew)
 
-    # upsample: function 
+    # upsample: function to upsample original data to a new sampling rate
     def up_sample(self, data, Fold, Fnew, t):
         
         new_samples = int(int(len(data)/Fold) * int(Fnew))
@@ -123,7 +120,8 @@ class Downsampler:
             dithered = self.add_dither(original)
         else:
             dithered = original
-        down_quantized =  ((dithered /2**original_br)* 2**new_br).astype(np.float32)
+        print("newbr=",new_br)
+        down_quantized =  ((dithered /2**original_br)* 2**new_br)
         return down_quantized
 
 
