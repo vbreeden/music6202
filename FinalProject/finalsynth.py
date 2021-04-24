@@ -111,7 +111,7 @@ if __name__ == '__main__':
         exit(0)
 
     if synth == 'additive':
-        print('Do additive stuff here.')
+        #print('Do additive stuff here.')
         type = str(args.synth[0][1]).lower()
         if type != 'square' and type != 'sine':
             print("The only valid additive synthesizer types are 'square' and 'sine'.")
@@ -185,19 +185,21 @@ if __name__ == '__main__':
             print('put delay call here.')
             print(delay_arg_list)
         elif effect == 'vibrato':
+            #print(args.vibrato)
             if args.vibrato is not None:
                 vibrato_arg_list = args.vibrato[vibrato_count]
-                maxDelaySamps = int(vibrato_arg_list[0])
-                fmod = int(vibrato_arg_list[1])
-            #set default max delay and frequency modulation if no input parameters are provided
-            else:
-                maxDelaySamps = 50
-                fmod = 1
-            print('maxDelaySamps',maxDelaySamps)
-            print('fmod',fmod)
+                if vibrato_arg_list is not None:
+                    maxDelaySamps = int(vibrato_arg_list[0])
+                    fmod = int(vibrato_arg_list[1])
+                #set default max delay and frequency modulation if no input parameters are provided
+                else:
+                    maxDelaySamps = 50
+                    fmod = 1
+            #print('maxDelaySamps',maxDelaySamps)
+            #print('fmod',fmod)
             vibrato.apply_vibrato(synthesizer.wave, maxDelaySamps, fmod)
             vibrato_count += 1
-            print('put vibrato call here.')
+            #print('put vibrato call here.')
             print(vibrato_arg_list)
         elif effect == 'bandpass':
             bandpass_arg_list = args.bandpass[bandpass_count]

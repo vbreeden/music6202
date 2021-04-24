@@ -88,20 +88,21 @@ class Vibrato:
             s = x[i]
             ringBuf.pushSample(s)
             delaySamps = int((math.sin(2 * math.pi * phi) + 1.001) * maxDelaySamps)
-            y[i] = ringBuf.delayedSample(delaySamps) * 0.5
+            y[i] = ringBuf.delayedSample(delaySamps)
 
             phi = phi + deltaPhi
             while phi >= 1:
                 phi -= 1
-        # plt.plot(y)
-        # plt.savefig('vibratoplot.jpg')
-        # plt.close()
-        # plt.plot(y[0:1000])
-        # plt.savefig('vibratoplot_subset.jpg')
-        # plt.close()
-        # plt.plot(y[46000:50000])
-        # plt.savefig('vibratoplot_subset2.jpg')
-       # plt.close()
+
+        plt.plot(y)
+        plt.savefig('vibratoplot.jpg')
+        plt.close()
+        plt.plot(y[0:1000])
+        plt.savefig('vibratoplot_subset.jpg')
+        plt.close()
+        plt.plot(y[46000:50000])
+        plt.savefig('vibratoplot_subset2.jpg')
+        plt.close()
         self.wave_file_path='vibrato'
         write(self.wave_file_path + ".wav", SAMPLE_RATE, np.array(y))
         return y

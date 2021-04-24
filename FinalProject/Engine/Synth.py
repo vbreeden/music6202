@@ -113,7 +113,7 @@ class WavetableSynth:
 
     def generate_wavetable(self,  notes, timbre, sweep, speed):
         self.wave_file_path = 'out_wavetable'
-        frequencies = notes.frequencies
+        frequencies = np.around(notes.frequencies,2)
         amplitudes = notes.amplitudes
         durations = notes.durations
 
@@ -123,8 +123,9 @@ class WavetableSynth:
 
         # get list of unique frequencies in the kern file
         unique_freqs = np.unique(frequencies)
-        unique_freqs = np.delete(unique_freqs, 0)
-        # print('unique_freqs=',unique_freqs)
+        #remove frequency of 0 from the list (placeholder for rests) - do not need to include in the wavetable
+        unique_freqs=unique_freqs[unique_freqs!=0]
+        #print('unique_freqs=',unique_freqs)
         wavetable = []
         # first dimension of wavetable corresponds to number of unique frequencies in the krn file (excluding rests)
         for i in range(len(unique_freqs)):
