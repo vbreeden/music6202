@@ -53,12 +53,43 @@ class LinearWrap(object):
 
 @dataclass
 class Chorus:
-    name: str
+    wave_file_path: str = 'chorus.wav'
 
-    def replace_this_function_name(self, name='Default Name'):
-        self.name = name
-        print('Working')
+    def apply_chorus(self, wave, maxDelaySamps, fmod):
 
+        # Simple Chorus
+        # x, sr = sf.read('input/sv.wav')
+        x = LinearWrap(wave)
+        print(type(x))
+        # output = 'output/sv_simpleChorus.wav'
+
+        fmod = 1.5
+        A = int(0.002 * SAMPLE_RATE)
+        M = int(0.002 * SAMPLE_RATE)
+        BL = 1.0
+        FF = 0.7
+
+        if A > M:
+            raise RuntimeError("Amplitude of vibrato too high for delay length")
+
+        maxDelaySamps = M + A + 2 # Probably don't need the 2 here, but being safe
+        outputSamps = len(x) + maxDelaySamps
+        y = np.zeros(outputSamps)
+        ringBuf = LinearRingBuffer(maxDelaySamps)
+        deltaPhi = fmod/SAMPLE_RATE
+        phi = 0
+
+        for i in range(outputSamps):
+            s = x[i]
+            ringBuf.pushSample(s)
+            delaySamps = M + int(math.sin(2 * math.pi * phi) * A)
+            y[i] = s * BL + ringBuf.delayedSample(delaySamps) * FF
+
+            phi = phi + deltaPhi
+            while phi >= 1:
+                phi -= 1
+
+        write(self.wave_file_path, SAMPLE_RATE, np.array(y))
 
 @dataclass
 class Delay:

@@ -11,7 +11,7 @@ from Engine.Synth import AdditiveSynth, WavetableSynth
 # from FinalProject.Effects.Convolution import Reverb
 # from FinalProject.Effects.Filter import Bandpass, Lowpass
 # from FinalProject.Effects.Modulation import Chorus, Delay, Vibrato
-from Effects.Modulation import Vibrato
+from Effects.Modulation import Vibrato, Chorus
 # from FinalProject.Engine.Synth import AdditiveSynth, WavetableSynth
 
 # This is the parser that will parse commandline arguments.
@@ -42,7 +42,7 @@ def define_args():
 
     # Modulation effects
     parser.add_argument('-c', '--chorus', nargs='+', action='append', help='Add a chorus effect to the signal path.'
-                                                                           'Ex: finalsynth -c ChorusParam')
+                                                                           'Ex: finalsynth -c 200 1.5')
     parser.add_argument('-d', '--delay', nargs='+', action='append', help='Add a delay effect to the signal path.'
                                                                           'Ex: finalsynth -d DelayParam')
     parser.add_argument('-v', '--vibrato', nargs='+', action='append', help='Add a vibrato to the signal path. Pass in max delay samples and frequency modulation.'
@@ -141,6 +141,8 @@ if __name__ == '__main__':
 
     if args.vibrato is not None:
         vibrato = Vibrato()
+    if args.chorus is not None:
+        chorus = Chorus()
 
     notes = Notes()
     notes.parse_kern(kern_file=kern_file)
@@ -175,7 +177,19 @@ if __name__ == '__main__':
     # arguments for the first lowpass filter, and args.lowpass[1] will have the arguments for the second lowpass filter.
     for effect in effects_list:
         if effect == 'chorus':
-            chorus_arg_list = args.chorus[chorus_count]
+            if args.chorus is not None:
+                chorus_arg_list = args.chorus[chorus_count]
+                chorus_arg_list = args.chorus[chorus_count]
+                maxDelaySamps = int(chorus_arg_list[0])
+                fmod = int(chorus_arg_list[1])
+                chorus_count += 1
+                print(chorus_arg_list)
+            else:
+                maxDelaySamps = 50
+                fmod = 1
+            print('in finalsynth : maxDelaySamps',maxDelaySamps)
+            print('in finalsynth : fmod',fmod)
+            chorus.apply_chorus(synthesizer.wave, maxDelaySamps, fmod)
             chorus_count += 1
             print('put chorus call here.')
             print(chorus_arg_list)
