@@ -204,6 +204,11 @@ if __name__ == '__main__':
 
             if len(reverb_arg_list) >= 2:
                 percent_mix = float(reverb_arg_list[1])
+                # If the percent_mix is greater than 1, be nice and warn the user but also set it to 1
+                if percent_mix > 1.0:
+                    print('Wet/dry mix percentages must be between 0 and 1. '
+                          'The value {percent_mix} was provided so we are defaulting to 1.')
+                    percent_mix = 1.0
             else:
                 print('No wet/dry mix percentage was provided for the reverb, defaulting to a 50% blend.')
                 percent_mix = 0.5

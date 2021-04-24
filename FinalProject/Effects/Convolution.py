@@ -17,25 +17,24 @@ class Reverb:
 
     def apply_reverb(self, wave, ir, percent_mix=0):
         self.wave = np.float32(wave)
-        self.ir = 'Effects/IR_Files/' + ir
-
-        sr, stream = read('Effects/IR_Files/' + ir)
-
+        ir_loc = 'Effects/IR_Files/' + ir
+        sr, stream = read(ir_loc)
         self.ir = stream
 
         convolved_wave = fftconvolve(self.wave, self.ir)
 
-        dry_wave = self.wave * (1.0 - percent_mix)
-        wet_wave = (convolved_wave / np.abs(np.max(convolved_wave)))*percent_mix
+        dry_signal = self.wave * (1.0 - percent_mix)
+        wet_signal = (convolved_wave / np.abs(np.max(convolved_wave)))*percent_mix
 
-        if len(dry_wave) < len(wet_wave):
-            pad_length = np.abs(len(dry_wave) - len(wet_wave))
-            dry_wave = np.pad(dry_wave, (0, pad_length), 'constant')
-        elif len(wet_wave) < len(dry_wave):
-            pad_length = np.abs(len(dry_wave) - len(wet_wave))
-            wet_wave = np.pad(wet_wave, (0, pad_length), 'constant')
+        if len(dry_signal) < len(wet_signal):
+            pad_length = np.abs(len(dry_signal) - len(wet_signal))
+            dry_signal = np.pad(dry_signal, (0, pad_length), 'constant')
+        elif len(wet_signal) < len(dry_signal):
+            pad_length = np.abs(len(dry_signal) - len(wet_signal))
+            wet_signal = np.pad(wet_signal, (0, pad_length), 'constant')
 
-        convolved_wave = dry_wave + wet_wave
+        # Re-assign the convolved wave as a mixture of the wet and dry signals.
+        convolved_wave = dry_signal + wet_signal
 
         write(self.wave_file_path + ".wav", SAMPLE_RATE, np.array(convolved_wave))
 
