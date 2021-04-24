@@ -202,18 +202,24 @@ if __name__ == '__main__':
         elif effect == 'reverb':
             reverb_arg_list = args.reverb[reverb_count]
 
+            if len(reverb_arg_list) >= 2:
+                percent_mix = float(reverb_arg_list[1])
+            else:
+                print('No wet/dry mix percentage was provided for the reverb, defaulting to a 50% blend.')
+                percent_mix = 0.5
+
             if str(reverb_arg_list[0]) == 'big_hall':
-                reverb.apply_reverb(synthesizer.wave, 'big_hall.wav')
+                reverb.apply_reverb(synthesizer.wave, 'big_hall.wav', percent_mix=percent_mix)
             elif str(reverb_arg_list[0]) == 'big_room':
-                reverb.apply_reverb(synthesizer.wave, 'big_room.wav')
+                reverb.apply_reverb(synthesizer.wave, 'big_room.wav', percent_mix=percent_mix)
             elif str(reverb_arg_list[0]) == 'box':
-                reverb.apply_reverb(synthesizer.wave, 'box.wav')
+                reverb.apply_reverb(synthesizer.wave, 'box.wav', percent_mix=percent_mix)
             elif str(reverb_arg_list[0]) == 'drum_plate':
-                reverb.apply_reverb(synthesizer.wave, 'drum_plate.wav')
+                reverb.apply_reverb(synthesizer.wave, 'drum_plate.wav', percent_mix=percent_mix)
             elif str(reverb_arg_list[0]) == 'jazz_hall':
-                reverb.apply_reverb(synthesizer.wave, 'jazz_hall.wav')
+                reverb.apply_reverb(synthesizer.wave, 'jazz_hall.wav', percent_mix=percent_mix)
             elif str(reverb_arg_list[0]) == 'wet_reverb':
-                reverb.apply_reverb(synthesizer.wave, 'wet_reverb.wav')
+                reverb.apply_reverb(synthesizer.wave, 'wet_reverb.wav', percent_mix=percent_mix)
             else:
                 print("'big_hall', 'big_room', and 'box' are the only reverbs currently available.")
                 exit(0)
