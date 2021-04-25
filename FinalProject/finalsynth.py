@@ -178,43 +178,41 @@ if __name__ == '__main__':
             chorus_arg_list = args.chorus[chorus_count]
             chorus_count += 1
             print('put chorus call here.')
-            print(chorus_arg_list)
+            # print(chorus_arg_list)
         elif effect == 'delay':
             delay_arg_list = args.delay[delay_count]
             delay_count += 1
             print('put delay call here.')
-            print(delay_arg_list)
+            # print(delay_arg_list)
         elif effect == 'vibrato':
-            #print(args.vibrato)
             if args.vibrato is not None:
                 vibrato_arg_list = args.vibrato[vibrato_count]
-                if vibrato_arg_list is not None:
-                    maxDelaySamps = int(vibrato_arg_list[0])
+                if vibrato_arg_list is not None and len(vibrato_arg_list) < 2:
+                    max_delay_samps = int(vibrato_arg_list[0])
                     fmod = int(vibrato_arg_list[1])
-                #set default max delay and frequency modulation if no input parameters are provided
+                # set default max delay and frequency modulation if no input parameters are provided
                 else:
-                    maxDelaySamps = 50
+                    print('Both a maximum delay and fmod must be passed to the Vibrato module. '
+                          'Defaulting to a maximum delay of 50 samples and fmod of 1.')
+                    max_delay_samps = 50
                     fmod = 1
-            #print('maxDelaySamps',maxDelaySamps)
-            #print('fmod',fmod)
-            vibrato.apply_vibrato(synthesizer.wave, maxDelaySamps, fmod)
+            synthesizer.wave = vibrato.apply_vibrato(synthesizer.wave, max_delay_samps, fmod)
             vibrato_count += 1
-            #print('put vibrato call here.')
-            print(vibrato_arg_list)
+            # print(vibrato_arg_list)
         elif effect == 'bandpass':
             bandpass_arg_list = args.bandpass[bandpass_count]
             bandpass_count += 1
             print('put bandpass call here.')
-            print(bandpass_arg_list)
+            # print(bandpass_arg_list)
         elif effect == 'lowpass':
             lowpass_arg_list = args.lowpass[lowpass_count]
             lowpass_count += 1
             print('put lowpass call here.')
-            print(lowpass_arg_list)
+            # print(lowpass_arg_list)
         elif effect == 'reverb':
             reverb_arg_list = args.reverb[reverb_count]
             reverb_count += 1
-            print('put reverb call here.')
+            # print('put reverb call here.')
             print(reverb_arg_list)
 
     # Down-sample and write-to-audio function calls should be placed here.
