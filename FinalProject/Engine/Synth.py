@@ -94,7 +94,10 @@ class AdditiveSynth:
         # rescale to prevent clipping
         # if num_harmonics > 1:
         # x = sumSines / (numHarmonics - 1)
-        x = amplitude * sum_sines/max(sum_sines)
+        if max(sum_sines) != 0:
+            x = amplitude * sum_sines/max(sum_sines)
+        else:
+            x = np.zeros(len(sum_sines))
 
         return x
 
