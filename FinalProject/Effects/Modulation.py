@@ -4,9 +4,10 @@ import math
 from scipy.io.wavfile import write
 import matplotlib.pyplot as plt
 
-#code for ring buffer and modulated effects adapted from Andrew Beck's code in 19-ModulatedEffects.ipynb
+# code for ring buffer and modulated effects adapted from Andrew Beck's code in 19-ModulatedEffects.ipynb
 
 SAMPLE_RATE = 48000
+
 
 @dataclass
 class RingBuffer(object):
@@ -24,11 +25,13 @@ class RingBuffer(object):
         i = ((self.writeInd + self.maxDelay) - d) % self.maxDelay
         return self.buf[i]
 
+
 class LinearRingBuffer(RingBuffer):
     def __init__(self, maxDelay):
         self.maxDelay = maxDelay + 1
         self.buf = LinearWrap(np.zeros(self.maxDelay))
         self.writeInd = 0
+
 
 class LinearWrap(object):
     def __init__(self, it):
@@ -50,6 +53,7 @@ class LinearWrap(object):
         loX = self.it[loI] if inRange(loI) else 0
         hiX = self.it[hiI] if inRange(hiI) else 0
         return loX * (1 - a) + hiX * a
+
 
 @dataclass
 class Chorus:
@@ -87,7 +91,7 @@ class Vibrato:
         for i in range(outputSamps):
             s = x[i]
             ringBuf.pushSample(s)
-            delaySamps = int((math.sin(2 * math.pi * phi) + 1.001) * maxDelaySamps)
+            delaySamps = int((math.sin(2 * math.pi * phi) + 1.1) * maxDelaySamps)
             y[i] = ringBuf.delayedSample(delaySamps)
 
             phi = phi + deltaPhi
