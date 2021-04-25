@@ -22,13 +22,13 @@ class AdditiveSynth:
         amplitudes = notes.amplitudes
         durations = notes.durations
 
-        print('frequencies=', frequencies)
-        print('amplitudes=', amplitudes)
-        print('durations=', durations)
+        #print('frequencies=', frequencies)
+        #print('amplitudes=', amplitudes)
+        #print('durations=', durations)
 
         for i in range(len(frequencies)):
-            print("*** i=", i, "***")
-            print('frequencies[i], durations[i], amplitudes[i]=', frequencies[i], durations[i], amplitudes[i])
+            #print("*** i=", i, "***")
+            #print('frequencies[i], durations[i], amplitudes[i]=', frequencies[i], durations[i], amplitudes[i])
             if self.wave_type == 'sine':
                 self.wave.extend(self.add_sine_waves(frequencies[i], durations[i], amplitudes[i]))
                 # note: plots can be removed eventually, they are here temporarily to check the waveform shapes
@@ -113,18 +113,19 @@ class WavetableSynth:
 
     def generate_wavetable(self,  notes, timbre, sweep, speed):
         self.wave_file_path = 'out_wavetable'
-        frequencies = notes.frequencies
+        frequencies = np.around(notes.frequencies,2)
         amplitudes = notes.amplitudes
         durations = notes.durations
 
-        print('frequencies=', frequencies)
-        print('amplitudes=', amplitudes)
-        print('durations=', durations)
+       # print('frequencies=', frequencies)
+       # print('amplitudes=', amplitudes)
+       # print('durations=', durations)
 
         # get list of unique frequencies in the kern file
         unique_freqs = np.unique(frequencies)
-        unique_freqs = np.delete(unique_freqs, 0)
-        # print('unique_freqs=',unique_freqs)
+        #remove frequency of 0 from the list (placeholder for rests) - do not need to include in the wavetable
+        unique_freqs=unique_freqs[unique_freqs!=0]
+        #print('unique_freqs=',unique_freqs)
         wavetable = []
         # first dimension of wavetable corresponds to number of unique frequencies in the krn file (excluding rests)
         for i in range(len(unique_freqs)):

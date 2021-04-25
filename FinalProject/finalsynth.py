@@ -11,6 +11,7 @@ from Engine.Synth import AdditiveSynth, WavetableSynth
 # from FinalProject.Effects.Convolution import Reverb
 # from FinalProject.Effects.Filter import Bandpass, Lowpass
 # from FinalProject.Effects.Modulation import Chorus, Delay, Vibrato
+from Effects.Modulation import Vibrato
 # from FinalProject.Engine.Synth import AdditiveSynth, WavetableSynth
 
 # This is the parser that will parse commandline arguments.
@@ -44,8 +45,8 @@ def define_args():
                                                                            'Ex: finalsynth -c ChorusParam')
     parser.add_argument('-d', '--delay', nargs='+', action='append', help='Add a delay effect to the signal path.'
                                                                           'Ex: finalsynth -d DelayParam')
-    parser.add_argument('-v', '--vibrato', nargs='+', action='append', help='Add a chorus vibrato to the signal path.'
-                                                                            'Ex: finalsynth -v VibratoParam')
+    parser.add_argument('-v', '--vibrato', nargs='+', action='append', help='Add a vibrato to the signal path. Pass in max delay samples and frequency modulation.'
+                                                                            'Ex: finalsynth -v 200 1')
 
     # Filters
     parser.add_argument('-b', '--bandpass', nargs='+', action='append', help='Add a bandpass filter to the signal path.'
@@ -110,7 +111,7 @@ if __name__ == '__main__':
         exit(0)
 
     if synth == 'additive':
-        print('Do additive stuff here.')
+        #print('Do additive stuff here.')
         type = str(args.synth[0][1]).lower()
         if type != 'square' and type != 'sine':
             print("The only valid additive synthesizer types are 'square' and 'sine'.")
@@ -137,6 +138,9 @@ if __name__ == '__main__':
     else:
         print('Only additive and wavetable synths are supported.')
         exit(0)
+
+    if args.vibrato is not None:
+        vibrato = Vibrato()
 
     notes = Notes()
     notes.parse_kern(kern_file=kern_file)
@@ -174,31 +178,41 @@ if __name__ == '__main__':
             chorus_arg_list = args.chorus[chorus_count]
             chorus_count += 1
             print('put chorus call here.')
-            print(chorus_arg_list)
+            # print(chorus_arg_list)
         elif effect == 'delay':
             delay_arg_list = args.delay[delay_count]
             delay_count += 1
             print('put delay call here.')
-            print(delay_arg_list)
+            # print(delay_arg_list)
         elif effect == 'vibrato':
-            vibrato_arg_list = args.vibrato[vibrato_count]
+            if args.vibrato is not None:
+                vibrato_arg_list = args.vibrato[vibrato_count]
+                if vibrato_arg_list is not None and len(vibrato_arg_list) < 2:
+                    max_delay_samps = int(vibrato_arg_list[0])
+                    fmod = int(vibrato_arg_list[1])
+                # set default max delay and frequency modulation if no input parameters are provided
+                else:
+                    print('Both a maximum delay and fmod must be passed to the Vibrato module. '
+                          'Defaulting to a maximum delay of 50 samples and fmod of 1.')
+                    max_delay_samps = 50
+                    fmod = 1
+            synthesizer.wave = vibrato.apply_vibrato(synthesizer.wave, max_delay_samps, fmod)
             vibrato_count += 1
-            print('put vibrato call here.')
-            print(vibrato_arg_list)
+            # print(vibrato_arg_list)
         elif effect == 'bandpass':
             bandpass_arg_list = args.bandpass[bandpass_count]
             bandpass_count += 1
             print('put bandpass call here.')
-            print(bandpass_arg_list)
+            # print(bandpass_arg_list)
         elif effect == 'lowpass':
             lowpass_arg_list = args.lowpass[lowpass_count]
             lowpass_count += 1
             print('put lowpass call here.')
-            print(lowpass_arg_list)
+            # print(lowpass_arg_list)
         elif effect == 'reverb':
             reverb_arg_list = args.reverb[reverb_count]
             reverb_count += 1
-            print('put reverb call here.')
+            # print('put reverb call here.')
             print(reverb_arg_list)
 
     # Down-sample and write-to-audio function calls should be placed here.
