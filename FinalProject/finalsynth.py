@@ -240,7 +240,8 @@ if __name__ == '__main__':
             elif str(reverb_arg_list[0]) == 'wet_reverb':
                 synthesizer.wave = reverb.apply_reverb(synthesizer.wave, 'wet_reverb.wav', percent_mix=percent_mix)
             else:
-                print("'big_hall', 'big_room', and 'box' are the only reverbs currently available.")
+                print("'big_hall', 'big_room', 'box', 'drum_plate', 'jazz_hall', and 'wet_reverb' are the only reverbs "
+                      "currently available.")
                 exit(0)
 
             reverb_count += 1
