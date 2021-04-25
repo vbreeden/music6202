@@ -10,9 +10,7 @@ from Engine.AudioCore import Notes
 from Engine.Synth import AdditiveSynth, WavetableSynth
 from FinalProject.Effects.Convolution import Reverb
 # from FinalProject.Effects.Filter import Bandpass, Lowpass
-# from FinalProject.Effects.Modulation import Chorus, Delay, Vibrato
-from Effects.Modulation import Vibrato
-# from FinalProject.Engine.Synth import AdditiveSynth, WavetableSynth
+from Effects.Modulation import Delay, Vibrato
 
 
 # This is the parser that will parse commandline arguments.
@@ -112,12 +110,9 @@ if __name__ == '__main__':
         exit(0)
 
     if synth == 'additive':
-        #print('Do additive stuff here.')
-        type = str(args.synth[0][1]).lower()
-        if type != 'square' and type != 'sine':
+        synth_type = str(args.synth[0][1]).lower()
+        if synth_type != 'square' and synth_type != 'sine':
             print("The only valid additive synthesizer types are 'square' and 'sine'.")
-        # type = args.type[0][0]
-
     elif synth == 'wavetable':
         if len(args.synth[0]) >= 3:
             timbre = np.abs(int(args.synth[0][1]))
@@ -140,6 +135,9 @@ if __name__ == '__main__':
         print('Only additive and wavetable synths are supported.')
         exit(0)
 
+    if args.delay is not None:
+        delay = Delay()
+
     if args.reverb is not None:
         reverb = Reverb()
 
@@ -160,7 +158,7 @@ if __name__ == '__main__':
         # Call additive synth
         # print('We will want to return the created audio data to this point so we can pass it through the effects')
         synthesizer = AdditiveSynth()
-        synthesizer.generate_additive_wav(notes, type)
+        synthesizer.generate_additive_wav(notes, synth_type)
     else:
         print('Additive and Wavetable are the only valid synthesizer options.')
         exit(0)
@@ -185,6 +183,14 @@ if __name__ == '__main__':
             # print(chorus_arg_list)
         elif effect == 'delay':
             delay_arg_list = args.delay[delay_count]
+            if delay_arg_list is not None and len(delay_arg_list) >= 2:
+                delay_samples = int(delay_arg_list[0])
+                percent_mix = float(delay_arg_list[1])
+            else:
+                print('A delay value and mix percentage must be provided to implement delay. Defaulting to no delay.')
+                delay_samples = 0
+                percent_mix = 0
+            synthesizer.wave = delay.apply_delay(synthesizer.wave, delay_samples, percent_mix)
             delay_count += 1
             print('put delay call here.')
             # print(delay_arg_list)

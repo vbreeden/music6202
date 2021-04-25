@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import numpy as np
 import math
 from scipy.io.wavfile import write
@@ -66,19 +66,31 @@ class Chorus:
 
 @dataclass
 class Delay:
-    name: str
+    wave_file_path: str = 'DelayLine'
 
-    def replace_this_function_name(self, name='Default Name'):
-        self.name = name
-        print('Working')
+    def apply_delay(self, wave, delay_samples, percent_mix=0.5):
+        linear_wrap = LinearWrap(wave)
+
+        output_samples = len(linear_wrap) + delay_samples
+        delay = np.zeros(output_samples, dtype='float32')
+        ring_buf = LinearRingBuffer(delay_samples)
+
+        for i in range(output_samples):
+            s = linear_wrap[i]
+            ring_buf.pushSample(s)
+            delay[i] = s * percent_mix + ring_buf.delayedSample(delay_samples) * (1 - percent_mix)
+
+        self.wave_file_path = 'DelayLine'
+        write(self.wave_file_path + ".wav", SAMPLE_RATE, np.array(delay))
+        return delay
 
 
 @dataclass
 class Vibrato:
-    wave_file_path: str = 'Reverb'
+    wave_file_path: str = 'Vibrato'
+    wave: np.ndarray = np.zeros(0)
 
     def apply_vibrato(self, wave, max_delay_samps, fmod):
-        self.wave = wave
         x = LinearWrap(wave)
 
         output_samps = len(x) + max_delay_samps
