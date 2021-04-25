@@ -181,7 +181,7 @@ if __name__ == '__main__':
                 chorus_arg_list = args.chorus[chorus_count]
                 chorus_arg_list = args.chorus[chorus_count]
                 maxDelaySamps = int(chorus_arg_list[0])
-                fmod = int(chorus_arg_list[1])
+                fmod = float(chorus_arg_list[1])
                 chorus_count += 1
                 print(chorus_arg_list)
             else:
@@ -189,7 +189,7 @@ if __name__ == '__main__':
                 fmod = 1
             print('in finalsynth : maxDelaySamps',maxDelaySamps)
             print('in finalsynth : fmod',fmod)
-            chorus.apply_chorus(synthesizer.wave, maxDelaySamps, fmod)
+            synthesizer.wave = chorus.apply_chorus(synthesizer.wave, maxDelaySamps, fmod)
             chorus_count += 1
             print('put chorus call here.')
             print(chorus_arg_list)

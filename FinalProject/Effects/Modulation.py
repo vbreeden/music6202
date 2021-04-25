@@ -91,6 +91,8 @@ class Chorus:
 
         write(self.wave_file_path, SAMPLE_RATE, np.array(y))
 
+        return y
+
 @dataclass
 class Delay:
     name: str
