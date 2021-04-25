@@ -77,24 +77,24 @@ class Delay:
 class Vibrato:
     wave_file_path: str = 'Reverb'
 
-    def apply_vibrato(self, wave, maxDelaySamps, fmod):
+    def apply_vibrato(self, wave, max_delay_samps, fmod):
         self.wave = wave
         x = LinearWrap(wave)
 
-        outputSamps = len(x) + maxDelaySamps
-        y = np.zeros(outputSamps, dtype='float32')
-        ringBuf = LinearRingBuffer(maxDelaySamps)
+        output_samps = len(x) + max_delay_samps
+        y = np.zeros(output_samps, dtype='float32')
+        ring_buf = LinearRingBuffer(max_delay_samps)
 
-        deltaPhi = fmod/SAMPLE_RATE
+        delta_phi = fmod/SAMPLE_RATE
         phi = 0
 
-        for i in range(outputSamps):
+        for i in range(output_samps):
             s = x[i]
-            ringBuf.pushSample(s)
-            delaySamps = int((math.sin(2 * math.pi * phi) + 1.1) * maxDelaySamps)
-            y[i] = ringBuf.delayedSample(delaySamps)
+            ring_buf.pushSample(s)
+            delay_samps = int((math.sin(2 * math.pi * phi) + 1.1) * max_delay_samps)
+            y[i] = ring_buf.delayedSample(delay_samps)
 
-            phi = phi + deltaPhi
+            phi = phi + delta_phi
             while phi >= 1:
                 phi -= 1
 
@@ -107,6 +107,6 @@ class Vibrato:
         plt.plot(y[46000:50000])
         plt.savefig('vibratoplot_subset2.jpg')
         plt.close()
-        self.wave_file_path='vibrato'
+        self.wave_file_path = 'vibrato'
         write(self.wave_file_path + ".wav", SAMPLE_RATE, np.array(y))
         return y
