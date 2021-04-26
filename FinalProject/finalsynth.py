@@ -222,9 +222,10 @@ if __name__ == '__main__':
 
     # Down-sample and write-to-audio function calls should be placed here.
   
-
+    synthesizer.wave = np.asarray(synthesizer.wave, dtype=np.int32)
     output = Downsampler()
     res = synthesizer.wave
+
 
     # #debugging, remove later
     # file_path = 'sine.wav'
@@ -246,10 +247,13 @@ if __name__ == '__main__':
 
         Fs = 48000
         down_factor = ceil(Fs/float(output.output_sample_rate))
-        t = len(synthesizer.wave)/Fs
-        down_sampled_data = output.down_sample(synthesizer.wave, down_factor)
-        # print("down-",down_sampled_data)
+        print("down_factor : ",down_factor)
+
+        t = len(res)/Fs
+        down_sampled_data = output.down_sample(res, down_factor, Fs)
+        print("down_sampled_data : ",down_sampled_data)
         res = output.up_sample(down_sampled_data, int(Fs/down_factor), output.output_sample_rate, t)
+        print("Res after down sample:",res)
 
     if args.bitrate is not None:
         output.output_bit_rate = int(args.bitrate[0][0])
@@ -258,6 +262,7 @@ if __name__ == '__main__':
         plt.savefig('dq.jpg')
         plt.close()
         res= dq
+        print("Res after down quantize:",res)
 
     output.write_wav(args.output[0][0], res, output.output_sample_rate, output.output_bit_rate)
     

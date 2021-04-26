@@ -2,7 +2,7 @@ from math import ceil
 import numpy as np
 from dataclasses import dataclass, field
 from music21 import converter
-
+import matplotlib.pyplot as plt
 import soundfile as sf
 from soundfile import SoundFile, write
 from subtypes import Subtype
@@ -83,14 +83,19 @@ class Downsampler:
         write(wave_file_path, data, fs, subtype)
 
     # Low pass filter (type of low pass: butter) : function to remove the frequencies above the Shannon Nyquist frequency
-    def low_pass(self, data, factor):
-        b, a = signal.butter(3, 0.05, 'lowpass')
+    def low_pass(self, data, Fs_new, Fs):
+        b, a = signal.butter(2, Fs_new/2, 'lowpass', Fs)
         filtered = signal.filtfilt(b, a, data)
+        plt.plot(filtered)
+        plt.savefig('filter.jpg')
+        plt.close()
         return filtered
 
     # downsample: function to return the down-sampled function based on the down-sampling factor
-    def down_sample(self, data, factor):
-        low_filtered = self.low_pass(data, factor)
+    def down_sample(self, data, factor, Fs):
+        print("before lowpass:",data)
+        low_filtered = self.low_pass(data, factor, Fs)
+        print("after lowpass:",low_filtered)
         return low_filtered[::factor]
 
     # cubic_interpolate: function to return upsampled array with cubic interpolated values
@@ -121,7 +126,12 @@ class Downsampler:
         else:
             dithered = original
         print("newbr=",new_br)
-        down_quantized =  ((dithered /2**original_br)* 2**new_br)
+        # down_quantized =  ((dithered /2**original_br)* 2**new_br)
+
+        a =  (dithered >> original_br) 
+        down_quantized = (a << new_br)
+        print("a: ",a)
+
         return down_quantized
 
 

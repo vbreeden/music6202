@@ -87,6 +87,9 @@ class AdditiveSynth:
         flag = max(sum_sines) if max(sum_sines) else 1
 
         x = amplitude * np.divide(sum_sines,flag)
+        x = x*np.iinfo(np.int32).max
+        x = x.astype(np.int32)
+        # x = np.asarray(x, dtype=np.int32)
         return x
 
 
