@@ -89,12 +89,15 @@ class Downsampler:
         plt.plot(filtered)
         plt.savefig('filter.jpg')
         plt.close()
+        plt.plot(data)
+        plt.savefig('orig_data.jpg')
+        plt.close()
         return filtered
 
     # downsample: function to return the down-sampled function based on the down-sampling factor
-    def down_sample(self, data, factor, Fs):
+    def down_sample(self, data, factor, Fs_new, Fs):
         print("before lowpass:",data)
-        low_filtered = self.low_pass(data, factor, Fs)
+        low_filtered = self.low_pass(data, factor, Fs_new, Fs)
         print("after lowpass:",low_filtered)
         return low_filtered[::factor]
 
