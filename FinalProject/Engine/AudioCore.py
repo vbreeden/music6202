@@ -84,7 +84,8 @@ class Downsampler:
 
     # Low pass filter (type of low pass: butter) : function to remove the frequencies above the Shannon Nyquist frequency
     def low_pass(self, data, Fs_new, Fs):
-        b, a = signal.butter(2, Fs_new/2, 'lowpass', Fs)
+        b, a =signal.butter(N=2, Wn=Fs_new/2, btype='low', analog=False, fs=Fs)
+
         filtered = signal.filtfilt(b, a, data)
         plt.plot(filtered)
         plt.savefig('filter.jpg')
@@ -97,7 +98,7 @@ class Downsampler:
     # downsample: function to return the down-sampled function based on the down-sampling factor
     def down_sample(self, data, factor, Fs_new, Fs):
         print("before lowpass:",data)
-        low_filtered = self.low_pass(data, factor, Fs_new, Fs)
+        low_filtered = self.low_pass(data, Fs_new, Fs)
         print("after lowpass:",low_filtered)
         return low_filtered[::factor]
 

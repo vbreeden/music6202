@@ -4,11 +4,10 @@ from scipy import signal
 @dataclass
 class Lowpass:
 
-    def low_pass(self, data, factor):
-        b, a = signal.butter(3, 0.1)
+    def low_pass(self, data, Fs_new, Fs):
+        b, a =signal.butter(N=2, Wn=Fs_new/2, btype='low', analog=False, fs=Fs)
         filtered = signal.filtfilt(b, a, data)
         return filtered
-
 
 @dataclass
 class Bandpass:
