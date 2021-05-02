@@ -22,33 +22,11 @@ class AdditiveSynth:
         amplitudes = notes.amplitudes
         durations = notes.durations
 
-        #print('frequencies=', frequencies)
-        #print('amplitudes=', amplitudes)
-        #print('durations=', durations)
-
         for i in range(len(frequencies)):
-            #print("*** i=", i, "***")
-            #print('frequencies[i], durations[i], amplitudes[i]=', frequencies[i], durations[i], amplitudes[i])
             if self.wave_type == 'sine':
                 self.wave.extend(self.add_sine_waves(frequencies[i], durations[i], amplitudes[i]))
-                # note: plots can be removed eventually, they are here temporarily to check the waveform shapes
-                # and overall amplitudes
-                plt.plot(self.wave)
-                plt.savefig('sineplot.jpg')
-                plt.close()
-                plt.plot(self.wave[0:1000])
-                plt.savefig('sineplot_subset.jpg')
-                plt.close()
             elif self.wave_type == 'square':
                 self.wave.extend(self.generate_square_wave(frequencies[i], durations[i], amplitudes[i]))
-                plt.plot(self.wave)
-                plt.savefig('squareplot.jpg')
-                plt.close()
-                plt.plot(self.wave[0:1000])
-                plt.savefig('squareplot_subset.jpg')
-                plt.close()
-            # print ('data type=',np.array(self.wave).dtype)
-        write(self.wave_file_path + ".wav", SAMPLE_RATE, np.array(self.wave))
 
         return self.wave
 
@@ -96,12 +74,11 @@ class AdditiveSynth:
         # x = sumSines / (numHarmonics - 1)
 
         # Condition to cater to the divide by zero case
-        flag = max(sum_sines) if max(sum_sines) else 1
 
+        flag = max(sum_sines) if max(sum_sines) else 1
         x = amplitude * np.divide(sum_sines, flag)
         x = x * np.iinfo(np.int32).max
         x = x.astype(np.int32)
-
         return x
 
 
