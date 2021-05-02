@@ -300,7 +300,7 @@ if __name__ == '__main__':
     if args.bitrate is not None:
         output.output_bit_rate = int(args.bitrate[0][0])
 
-        if output.output_bit_rate != 16 or output.output_bit_rate != 8:
+        if output.output_bit_rate != 16 and output.output_bit_rate != 8:
             print(f'Only bitrates of 16 and 8 are currently recognized. The value entered was {output.output_bit_rate}')
             exit(0)
 
