@@ -183,11 +183,14 @@ if __name__ == '__main__':
             # print(chorus_arg_list)
         elif effect == 'delay':
             delay_arg_list = args.delay[delay_count]
+            internal_sr = 48000
             if delay_arg_list is not None and len(delay_arg_list) >= 2:
-                delay_samples = int(delay_arg_list[0])
+                # TODO: Remember to make the internal SR global to the system.
+                delay_samples = int(int(delay_arg_list[0]) * internal_sr)
                 percent_mix = float(delay_arg_list[1])
             else:
-                print('A delay value and mix percentage must be provided to implement delay. Defaulting to no delay.')
+                print('The number of seconds to delay and mix percentage must be provided to implement delay. '
+                      'Defaulting to no delay.')
                 delay_samples = 0
                 percent_mix = 0
             synthesizer.wave = delay.apply_delay(synthesizer.wave, delay_samples, percent_mix)
