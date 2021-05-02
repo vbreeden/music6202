@@ -7,6 +7,7 @@ from soundfile import write
 from subtypes import Subtype
 from scipy.interpolate import interp1d
 from scipy import signal
+from FinalProject.Effects.Filter import Lowpass
 
 
 @dataclass
@@ -77,29 +78,17 @@ class Downsampler:
     output_bit_rate: int = 32
 
     # write_wav : function to return a wav type output file based on the data and sample rate provided
-    def write_wav(self, wave_file_path, data, fs = output_sample_rate, bitrate=output_bit_rate):
+    def write_wav(self, wave_file_path, data, fs=output_sample_rate, bitrate=output_bit_rate):
         subtype = Subtype().get_subtype(bitrate)
         print("writing data:", data, "sampling-rate:", fs,  "at bit-rate:", bitrate, " to ", wave_file_path)
         write(wave_file_path, data, fs, subtype)
 
-    # Low pass filter (type of low pass: butter) : function to remove the frequencies above the Shannon Nyquist frequency
-    def low_pass(self, data, Fs_new, Fs):
-        b, a =signal.butter(N=2, Wn=Fs_new/2, btype='low', analog=False, fs=Fs)
-
-        filtered = signal.filtfilt(b, a, data)
-        plt.plot(filtered)
-        plt.savefig('filter.jpg')
-        plt.close()
-        plt.plot(data)
-        plt.savefig('orig_data.jpg')
-        plt.close()
-        return filtered
-
     # downsample: function to return the down-sampled function based on the down-sampling factor
     def down_sample(self, data, factor, Fs_new, Fs):
-        print("before lowpass:",data)
-        low_filtered = self.low_pass(data, Fs_new, Fs)
-        print("after lowpass:",low_filtered)
+        print("before lowpass:", data)
+        low_pass = Lowpass()
+        low_filtered = low_pass.low_pass(data, Fs_new, Fs)
+        print("after lowpass:", low_filtered)
         return low_filtered[::factor]
 
     # cubic_interpolate: function to return upsampled array with cubic interpolated values
@@ -127,11 +116,18 @@ class Downsampler:
         shape = new_br - 4  # calculate the noise shape based on the difference between original and new bitrate.
         noise = np.random.normal(0, 2**shape, original.shape)  # generate noise with mean = 0 and standard dev = 0.01
 
-        maxval = np.max(np.abs(noise))
-        bitlength = np.ceil(np.log2(maxval)).astype(int)
+        # We need a bitmask to prevent noise from replacing silent portions
+        # The noise gate cuttoff is scaled to our downsampling with a little extra breathing room (the -4 term).
+        # The difference is really only heard in the down quantization to 8 bits.
+        noise_gate_cutoff = 2**(original_br - new_br - 4)
+        bitmask = [1 if np.abs(original[i]) > noise_gate_cutoff else 0 for i in range(len(original))]
 
         # add noise to the signal to generate signal with added dither)
         new_signal = original + noise
+
+        # apply the bitmask
+        new_signal *= bitmask
+
         return new_signal
 
     # down_quantization: function to perform dithering and return the down-quantized signal
@@ -150,18 +146,12 @@ class Downsampler:
             bit_shift = 0
 
         if bit_shift - 1 == 16:
+            # Down quantize to 16 bits.
             down_quantized = (dithered >> bit_shift)
             down_quantized = down_quantized.astype(np.int16)
         elif bit_shift - 1 == 24:
+            # Down quantize to 8 bits, but put it in a 16 bit container to make soundfile's audio writer happy.
             down_quantized = (dithered >> bit_shift)
-
-            # Because of the power loss with the drop to 16 bits the amplitude needs to be doubled.
-            # down_quantized *= 3
-
-            # Because of limitations in scipy's wave writing function, we need to encode this as a 16 bit integer.
-            # However, the commented code reveals that only 8 bits are needed to encode the data.
-            maxval_down = np.max(np.abs(down_quantized))
-            bitlength_down = np.ceil(np.log2(maxval_down)).astype(int)
             down_quantized = down_quantized.astype(np.int16)
         else:
             down_quantized = original

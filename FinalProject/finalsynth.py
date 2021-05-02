@@ -47,8 +47,9 @@ def define_args():
                                                                            'Ex: finalsynth -c ChorusParam')
     parser.add_argument('-d', '--delay', nargs='+', action='append', help='Add a delay effect to the signal path.'
                                                                           'Ex: finalsynth -d DelayParam')
-    parser.add_argument('-v', '--vibrato', nargs='+', action='append', help='Add a vibrato to the signal path. Pass in max delay samples and frequency modulation.'
-                                                                            'Ex: finalsynth -v 200 1')
+    parser.add_argument('-v', '--vibrato', nargs='+', action='append',
+                        help='Add a vibrato to the signal path. Pass in max delay samples and frequency modulation. '
+                             'Ex: finalsynth -v 200 1')
 
     # Filters
     parser.add_argument('-b', '--bandpass', nargs='+', action='append', help='Add a bandpass filter to the signal path.'
@@ -66,14 +67,14 @@ def define_args():
                                                                          'format. Ex: finalsynth -k melody1.krn')
 
     # Down-sample frequency
-    parser.add_argument('-a', '--samplerate', nargs='+', action='append', help='Provide provide the desired sample rate '
-                                                                                'Ex: finalsynth -a 41000')
+    parser.add_argument('-a', '--samplerate', nargs='+', action='append',
+                        help='Provide provide the desired sample rate. Ex: finalsynth -a 41000')
     # Down-quantize bitrate
-    parser.add_argument('-q', '--bitrate', nargs='+', action='append', help='Provide the desired bit rate'
-                                                                                'Ex: finalsynth -q 16')
+    parser.add_argument('-q', '--bitrate', nargs='+', action='append',
+                        help='Provide the desired bit rate. Ex: finalsynth -q 16')
     # Output file
-    parser.add_argument('-o', '--output', nargs='+', action='append', help='Provide the name of the output file in wav '
-                                                                                'Ex: finalsynth -o my_music.wav')
+    parser.add_argument('-o', '--output', nargs='+', action='append',
+                        help='Provide the name of the output file in wav. Ex: finalsynth -o my_music.wav')
     return parser.parse_args()
 
 
@@ -275,26 +276,10 @@ if __name__ == '__main__':
             # print('put reverb call here.')
             print(reverb_arg_list)
 
-    # Down-sample and write-to-audio function calls should be placed here.
-
+    # Downsampler code
     synthesizer.wave = np.asarray(synthesizer.wave, dtype=np.int32)
     output = Downsampler()
     res = synthesizer.wave
-
-
-    # #debugging, remove later
-    # file_path = 'sine.wav'
-    # Fs, data = read(file_path)
-
-    # output.output_sample_rate = int(args.samplerate[0][0])
-
-    # Fs = 48000
-    # down_factor = ceil(Fs/float(44100))
-    # t = len(data)/Fs
-    # output.output_sample_rate = 44100
-    # down_sampled_data = output.down_sample(data, down_factor)
-    # # print("down-",down_sampled_data)
-    # res = output.up_sample(down_sampled_data, int(Fs/down_factor), output.output_sample_rate, t)
 
     if args.samplerate is not None:
         output.output_sample_rate = int(args.samplerate[0][0])
@@ -308,15 +293,25 @@ if __name__ == '__main__':
         print("down_sampled_data : ", down_sampled_data)
         res = output.up_sample(down_sampled_data, int(Fs/down_factor), output.output_sample_rate, t)
         print("Res after down sample:", res)
+    else:
+        print('An output sample rate must be provided for processing.')
+        exit(0)
 
     if args.bitrate is not None:
         output.output_bit_rate = int(args.bitrate[0][0])
+
+        if output.output_bit_rate != 16 or output.output_bit_rate != 8:
+            print(f'Only bitrates of 16 and 8 are currently recognized. The value entered was {output.output_bit_rate}')
+            exit(0)
+
         dq = output.down_quantization(res, 32, output.output_bit_rate)
         plt.plot(dq)
         plt.savefig('dq.jpg')
         plt.close()
         res = dq
         print("Res after down quantize:", res)
+    else:
+        print('A desired bitrate or either 16 or 8 must be provided for processing.')
 
     output.write_wav(args.output[0][0], res, output.output_sample_rate, output.output_bit_rate)
 
