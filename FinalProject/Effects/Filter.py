@@ -13,10 +13,10 @@ class Lowpass:
 class Bandpass:
     name: str
 
-    def band_pass(lowcut, highcut, fs, order=5):
-    	nyq = 0.5 * fs
-    	low = lowcut / nyq
-    	high = highcut / nyq
-    	b, a = butter(order, [low, high], btype='band')
+    def band_pass(self, data, lowcut, highcut, fs, order=5):
+        nyq = 0.5 * fs
+        low = lowcut / nyq
+        high = highcut / nyq
+        b, a = signal.butter(order, [low, high], btype='band')
         filtered = signal.filtfilt(b, a, data)
         return filtered
