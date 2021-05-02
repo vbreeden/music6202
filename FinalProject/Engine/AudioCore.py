@@ -119,22 +119,33 @@ class Downsampler:
 
     # add_dither: function to generate and add noise to the original signal and return the noise added signal
     def add_dither(self, original):
-        noise = np.random.normal(0, .01, original.shape) #generate noise with mean = 0 and standard dev = 0.01
-        new_signal = original + noise #add noise to the signal to generate signal with added dither
+        noise = np.random.normal(0, .01, original.shape)  # generate noise with mean = 0 and standard dev = 0.01
+        new_signal = original + noise  # add noise to the signal to generate signal with added dither
         return new_signal 
 
     # down_quantization: function to perform dithering and return the down-quantized signal
     def down_quantization(self, original, original_br, new_br, dither=1):
-        if (dither):
+        if dither:
             dithered = self.add_dither(original)
         else:
             dithered = original
-        print("newbr=",new_br)
-        # down_quantized =  ((dithered /2**original_br)* 2**new_br)
+        print("newbr=", new_br)
 
-        a =  (dithered >> original_br) 
-        down_quantized = (a << new_br)
-        print("a: ",a)
+        # down_quantized = ((dithered / 2**original_br) * 2**new_br)
+
+        down_quantized = dithered.astype(np.int64)
+        down_quantized = (down_quantized >> 16)
+
+        down_quantized = down_quantized.astype(np.int16)
+
+        print(2)
+
+        # a = np.right_shift(dithered, original_br)
+        # down_quantized = np.left_shift(a, new_br)
+
+        # a =  (dithered >> original_br)
+        # down_quantized = (a << new_br)
+        # print("a: ", a)
 
         return down_quantized
 

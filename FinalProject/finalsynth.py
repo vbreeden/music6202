@@ -298,7 +298,6 @@ if __name__ == '__main__':
     # # print("down-",down_sampled_data)
     # res = output.up_sample(down_sampled_data, int(Fs/down_factor), output.output_sample_rate, t)
 
-
     if args.samplerate is not None:
         output.output_sample_rate = int(args.samplerate[0][0])
 
@@ -318,8 +317,8 @@ if __name__ == '__main__':
         plt.plot(dq)
         plt.savefig('dq.jpg')
         plt.close()
-        res= dq
-        print("Res after down quantize:",res)
+        res = dq
+        print("Res after down quantize:", res)
 
     output.write_wav(args.output[0][0], res, output.output_sample_rate, output.output_bit_rate)
 
