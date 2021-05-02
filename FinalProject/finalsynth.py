@@ -43,8 +43,9 @@ def define_args():
                                                                            'Ex: finalsynth -c 200 1.5')
     parser.add_argument('-d', '--delay', nargs='+', action='append', help='Add a delay effect to the signal path.'
                                                                           'Ex: finalsynth -d DelayParam')
-    parser.add_argument('-v', '--vibrato', nargs='+', action='append', help='Add a vibrato to the signal path. Pass in max delay samples and frequency modulation.'
-                                                                            'Ex: finalsynth -v 200 1')
+    parser.add_argument('-v', '--vibrato', nargs='+', action='append',
+                        help='Add a vibrato to the signal path. Pass in max delay samples and frequency modulation. '
+                             'Ex: finalsynth -v 200 1')
 
     # Filters
     parser.add_argument('-b', '--bandpass', nargs='+', action='append', help='Add a bandpass filter to the signal path.'
