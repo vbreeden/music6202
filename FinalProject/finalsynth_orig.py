@@ -10,7 +10,8 @@ from math import ceil
 from Engine.AudioCore import Notes, Downsampler
 from Engine.Synth import AdditiveSynth, WavetableSynth
 from scipy.io.wavfile import read, write
-from soundfile import SoundFile
+import matplotlib.pyplot as plt
+
 
 # from FinalProject.Effects.Convolution import Reverb
 # from FinalProject.Effects.Filter import Bandpass, Lowpass
@@ -130,7 +131,6 @@ if __name__ == '__main__':
         exit(0)
 
     if synth == 'additive':
-        # print('Do additive stuff here.')
         add_synth_type = str(args.synth[0][1]).lower()
         if add_synth_type != 'square' and add_synth_type != 'sine':
             print("The only valid additive synthesizer types are 'square' and 'sine'.")
@@ -162,7 +162,6 @@ if __name__ == '__main__':
     notes.parse_kern(kern_file=kern_file)
 
     args_ordered = sys.argv
-    # print("HERE",args_ordered)
 
     # Use the synth engine selected by the user to digitize the melody from the kern file.
     if synth.lower() == 'wavetable':
@@ -221,12 +220,8 @@ if __name__ == '__main__':
             print('put reverb call here.')
             print(reverb_arg_list)
 
-    # Down-sample and write-to-audio function calls should be placed here.
-    
     data = np.asarray(synthesizer.wave, dtype=np.int32)
     data = data.astype(np.int32)
-    # write(wave_file_path, fs, data)
-
     output = Downsampler()
     res = data
 
@@ -235,18 +230,20 @@ if __name__ == '__main__':
 
         Fs = 48000
         down_factor = ceil(Fs/float(output.output_sample_rate))
-        t = len(synthesizer.wave)/Fs
-        down_sampled_data = output.down_sample(synthesizer.wave, down_factor, output.output_sample_rate,Fs)
-        res = output.up_sample(down_sampled_data, int(Fs/down_factor), output.output_sample_rate, t)
-        # write(wave_file_path, output.output_sample_rate, res)
 
+        t = len(res)/Fs
+        down_sampled_data = output.down_sample(res, down_factor, output.output_sample_rate, Fs)
+        res = output.up_sample(down_sampled_data, int(Fs/down_factor), output.output_sample_rate, t)
 
     if args.bitrate is not None:
         output.output_bit_rate = int(args.bitrate[0][0])
-        dq1 = output.down_quantization(res, 32, output.output_bit_rate)
-    
-    output.write_wav(args.output[0][0], dq1, output.output_sample_rate, output.output_bit_rate)
+        dq = output.down_quantization(res, 32, output.output_bit_rate)
+        res= dq
 
+    output.write_wav(args.output[0][0], res, output.output_sample_rate, output.output_bit_rate)
+    
     # This line exists as a convenient place to put a breakpoint for inspecting stored data. It will need
     # to be removed before delivery.
-    #print(args)
+    print(args)
+
+

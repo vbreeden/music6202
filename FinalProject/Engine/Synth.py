@@ -22,10 +22,6 @@ class AdditiveSynth:
         amplitudes = notes.amplitudes
         durations = notes.durations
 
-        # print('frequencies=', frequencies)
-        # print('amplitudes=', amplitudes)
-        # print('durations=', durations)
-
         for i in range(len(frequencies)):
             # print("*** i=", i, "***")
             # print('frequencies[i], durations[i], amplitudes[i]=', frequencies[i], durations[i], amplitudes[i])

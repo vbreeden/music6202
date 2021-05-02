@@ -9,6 +9,8 @@ from subtypes import Subtype
 import scipy
 from scipy.interpolate import interp1d
 from scipy import signal
+import wavio
+
 
 
 @dataclass
@@ -78,28 +80,27 @@ class Downsampler:
 
     # write_wav : function to return a wav type output file based on the data and sample rate provided
     def write_wav(self, wave_file_path, data, fs = output_sample_rate, bitrate=output_bit_rate):
-        subtype = Subtype().get_subtype(bitrate)
         print("writing data:", data, "sampling-rate:", fs,  "at bit-rate:", bitrate, " to ", wave_file_path)
-        write(wave_file_path, data, fs, subtype)
+        if bitrate == 8:
+            sampwidth=1  
+        elif bitrate == 16:
+            sampwidth = 2
+        elif bitrate == 24:
+            sampwidth = 3
+        else: 
+            sampwidth = 4
+        
+        wavio.write(wave_file_path, data, fs, sampwidth=sampwidth)
 
     # Low pass filter (type of low pass: butter) : function to remove the frequencies above the Shannon Nyquist frequency
     def low_pass(self, data, Fs_new, Fs):
         b, a =signal.butter(N=2, Wn=Fs_new/2, btype='low', analog=False, fs=Fs)
-
         filtered = signal.filtfilt(b, a, data)
-        plt.plot(filtered)
-        plt.savefig('filter.jpg')
-        plt.close()
-        plt.plot(data)
-        plt.savefig('orig_data.jpg')
-        plt.close()
-        return filtered
+        return filtered.astype(np.int32)
 
     # downsample: function to return the down-sampled function based on the down-sampling factor
     def down_sample(self, data, factor, Fs_new, Fs):
-        print("before lowpass:",data)
         low_filtered = self.low_pass(data, Fs_new, Fs)
-        print("after lowpass:",low_filtered)
         return low_filtered[::factor]
 
     # cubic_interpolate: function to return upsampled array with cubic interpolated values
@@ -107,9 +108,9 @@ class Downsampler:
         x = np.linspace(0, t, num=len(data), endpoint=True)
         y = data
         cs = interp1d(x, y, kind='cubic')
-     
         xNew = np.linspace(0, t, num=num_samples, endpoint=True)
-        return cs(xNew)
+        out = cs(xNew).astype(np.int32)
+        return out
 
     # upsample: function to upsample original data to a new sampling rate
     def up_sample(self, data, Fold, Fnew, t):
@@ -117,25 +118,49 @@ class Downsampler:
         new_samples = int(int(len(data)/Fold) * int(Fnew))
         return self.cubic_interpolate(data, t, new_samples)
 
-    # add_dither: function to generate and add noise to the original signal and return the noise added signal
-    def add_dither(self, original):
-        noise = np.random.normal(0, .01, original.shape) #generate noise with mean = 0 and standard dev = 0.01
-        new_signal = original + noise #add noise to the signal to generate signal with added dither
+    def array_type(self, br):
+        if br <= 8:
+            return np.byte
+        elif br <= 16:
+            return np.int16
+        elif br <= 32:
+            return np.int32
+        return data_type
+
+    def add_triangular_dither(self, original, original_br, new_br):
+        #shape = original_br-new_br #calculate the noise shape based on the difference between original and new bitrate.
+        diff = original_br - new_br
+        left = (-1)*(2**diff)
+        mode = 0
+        right = (2**diff) - 1
+        size = (original.shape) 
+        noise = np.random.triangular(left, mode, right, size) #generate noise with mean = 0 and standard dev = 0.01
+        noise = noise.astype(np.int32)
+
+        self.write_wav("noise.wav", noise, 41000, diff)
+        new_signal = original + noise  #add noise to the signal to generate signal with added dither
         return new_signal 
 
     # down_quantization: function to perform dithering and return the down-quantized signal
-    def down_quantization(self, original, original_br, new_br, dither=1):
-        if (dither):
-            dithered = self.add_dither(original)
-        else:
-            dithered = original
-        print("newbr=",new_br)
-        # down_quantized =  ((dithered /2**original_br)* 2**new_br)
+    def down_quantization(self, original, original_br, new_br):
+        """
+        The down quantization has the following steps:     
+            1. If dither is selected, we add dithering to the original audio
+            2. We create an array of zeros that has datatype of specific bitrate
+            3. We downquantize by right shifting
+            4. We return the array of specific bitrate type
+        """
+        # dithered = self.add_dither(original, original_br, new_br)
+        dithered = self.add_triangular_dither(original,original_br, new_br)        
+        arr_type = self.array_type(new_br)
+        
+        dithered = dithered.astype(np.int32)
+        down_quantized = np.zeros(len(dithered), dtype=arr_type)
+        
 
-        a =  (dithered >> original_br) 
-        down_quantized = (a << new_br)
-        print("a: ",a)
-
-        return down_quantized
+        for i in range(len(dithered)):
+            down_quantized[i] = dithered[i]>>(original_br-new_br)
+        return down_quantized.astype(arr_type)
+        
 
 
