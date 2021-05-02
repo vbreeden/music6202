@@ -3,10 +3,8 @@ import numpy as np
 from dataclasses import dataclass, field
 from music21 import converter
 import matplotlib.pyplot as plt
-import soundfile as sf
-from soundfile import SoundFile, write
+from soundfile import write
 from subtypes import Subtype
-import scipy
 from scipy.interpolate import interp1d
 from scipy import signal
 
@@ -120,16 +118,27 @@ class Downsampler:
         return self.cubic_interpolate(data, t, new_samples)
 
     # add_dither: function to generate and add noise to the original signal and return the noise added signal
-    def add_dither(self, original):
-        noise = np.random.normal(0, .01, original.shape)  # generate noise with mean = 0 and standard dev = 0.01
-        new_signal = original + noise  # add noise to the signal to generate signal with added dither
-        return new_signal 
+    # def add_dither(self, original):
+    #     noise = np.random.normal(0, .01, original.shape)  # generate noise with mean = 0 and standard dev = 0.01
+    #     new_signal = original + noise  # add noise to the signal to generate signal with added dither
+    #     return new_signal
+
+    def add_dither(self, original, original_br, new_br):
+        shape = new_br - 4  # calculate the noise shape based on the difference between original and new bitrate.
+        noise = np.random.normal(0, 2**shape, original.shape)  # generate noise with mean = 0 and standard dev = 0.01
+
+        maxval = np.max(np.abs(noise))
+        bitlength = np.ceil(np.log2(maxval)).astype(int)
+
+        # add noise to the signal to generate signal with added dither)
+        new_signal = original + noise
+        return new_signal
 
     # down_quantization: function to perform dithering and return the down-quantized signal
     def down_quantization(self, original, original_br, new_br):
         # Because our signal started the downsampling chain as an int32, we can recast it as an int32 before doing
         # further processing.
-        dithered = self.add_dither(original)
+        dithered = self.add_dither(original, original_br, new_br)
         dithered = dithered.astype(np.int32)
 
         maxval = np.max(np.abs(dithered))
@@ -147,7 +156,7 @@ class Downsampler:
             down_quantized = (dithered >> bit_shift)
 
             # Because of the power loss with the drop to 16 bits the amplitude needs to be doubled.
-            down_quantized *= 3
+            # down_quantized *= 3
 
             # Because of limitations in scipy's wave writing function, we need to encode this as a 16 bit integer.
             # However, the commented code reveals that only 8 bits are needed to encode the data.

@@ -9,14 +9,12 @@ import numpy as np
 from math import ceil
 from Engine.AudioCore import Notes, Downsampler
 from Engine.Synth import AdditiveSynth, WavetableSynth
+from Effects.Convolution import Reverb
+from Effects.Filter import Bandpass, Lowpass
+from Effects.Modulation import Chorus, Delay, Vibrato
 from scipy.io.wavfile import read, write
 import matplotlib.pyplot as plt
 
-
-# from FinalProject.Effects.Convolution import Reverb
-# from FinalProject.Effects.Filter import Bandpass, Lowpass
-# from FinalProject.Effects.Modulation import Chorus, Delay, Vibrato
-# from FinalProject.Engine.Synth import AdditiveSynth, WavetableSynth
 
 # This is the parser that will parse commandline arguments.
 parser = argparse.ArgumentParser()
