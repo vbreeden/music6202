@@ -11,7 +11,6 @@ class Lowpass:
 
 @dataclass
 class Bandpass:
-    name: str
 
     def band_pass(self, data, lowcut, highcut, fs, order=5):
         nyq = 0.5 * fs

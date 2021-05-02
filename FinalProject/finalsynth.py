@@ -166,6 +166,8 @@ if __name__ == '__main__':
         vibrato = Vibrato()
     if args.chorus is not None:
         chorus = Chorus()
+    if args.bandpass is not None:
+        bandpass = Bandpass()
 
     notes = Notes()
     notes.parse_kern(kern_file=kern_file)
@@ -246,7 +248,18 @@ if __name__ == '__main__':
             vibrato_count += 1
             # print(vibrato_arg_list)
         elif effect == 'bandpass':
-            bandpass_arg_list = args.bandpass[bandpass_count]
+            fs = 48000
+            if args.bandpass is not None:
+                bandpass_arg_list = args.bandpass[bandpass_count]
+                if bandpass_arg_list is not None and len(bandpass_arg_list) >= 2:
+                    lowcut = int(bandpass_arg_list[0])
+                    highcut = int(bandpass_arg_list[1])
+                else:
+                    print('Both a lowcut frequency and highcut frequency are required to use bandpass. '
+                          'Defaulting to 150Hz and 15000Hz')
+                    lowcut = 150
+                    highcut = 15000
+                synthesizer.wave = bandpass.band_pass(synthesizer.wave, lowcut, highcut, fs)
             bandpass_count += 1
             print('put bandpass call here.')
             # print(bandpass_arg_list)
