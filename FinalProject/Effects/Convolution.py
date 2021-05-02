@@ -1,10 +1,41 @@
-from dataclasses import dataclass
+import numpy as np
+# from numpy.fft import fft,ifft, rfft, irfft
+from dataclasses import dataclass, field
+from scipy.io.wavfile import write, read
+from scipy.fftpack import rfft, irfft
+from scipy.signal import convolve, fftconvolve
+
+
+SAMPLE_RATE = 48000
 
 
 @dataclass
 class Reverb:
-    name: str
+    wave_file_path: str = 'Reverb'
+    wave: list[float] = field(default_factory=list)
+    ir: list[float] = field(default_factory=list)
 
-    def replace_this_function_name(self, name='Default Name'):
-        self.name = name
-        print('Working')
+    def apply_reverb(self, wave, ir, percent_mix=0):
+        self.wave = np.float32(wave)
+        ir_loc = 'Effects/IR_Files/' + ir
+        sr, stream = read(ir_loc)
+        self.ir = stream
+
+        convolved_wave = fftconvolve(self.wave, self.ir)
+
+        dry_signal = self.wave * (1.0 - percent_mix)
+        wet_signal = (convolved_wave / np.abs(np.max(convolved_wave)))*percent_mix
+
+        if len(dry_signal) < len(wet_signal):
+            pad_length = np.abs(len(dry_signal) - len(wet_signal))
+            dry_signal = np.pad(dry_signal, (0, pad_length), 'constant')
+        elif len(wet_signal) < len(dry_signal):
+            pad_length = np.abs(len(dry_signal) - len(wet_signal))
+            wet_signal = np.pad(wet_signal, (0, pad_length), 'constant')
+
+        # Re-assign the convolved wave as a mixture of the wet and dry signals.
+        convolved_wave = dry_signal + wet_signal
+
+        write(self.wave_file_path + ".wav", SAMPLE_RATE, np.array(convolved_wave))
+
+        return convolved_wave
