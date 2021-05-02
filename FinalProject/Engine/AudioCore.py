@@ -1,3 +1,4 @@
+from Effects.Filter import Lowpass
 from math import ceil
 import numpy as np
 from dataclasses import dataclass, field
@@ -100,7 +101,8 @@ class Downsampler:
 
     # downsample: function to return the down-sampled function based on the down-sampling factor
     def down_sample(self, data, factor, Fs_new, Fs):
-        low_filtered = self.low_pass(data, Fs_new, Fs)
+        lp = Lowpass()
+        low_filtered = lp.low_pass(data, Fs_new, Fs)
         return low_filtered[::factor]
 
     # cubic_interpolate: function to return upsampled array with cubic interpolated values
@@ -117,15 +119,6 @@ class Downsampler:
         
         new_samples = int(int(len(data)/Fold) * int(Fnew))
         return self.cubic_interpolate(data, t, new_samples)
-
-    def array_type(self, br):
-        if br <= 8:
-            return np.byte
-        elif br <= 16:
-            return np.int16
-        elif br <= 32:
-            return np.int32
-        return data_type
 
     def add_triangular_dither(self, original, original_br, new_br):
         #shape = original_br-new_br #calculate the noise shape based on the difference between original and new bitrate.
@@ -145,22 +138,18 @@ class Downsampler:
     def down_quantization(self, original, original_br, new_br):
         """
         The down quantization has the following steps:     
-            1. If dither is selected, we add dithering to the original audio
-            2. We create an array of zeros that has datatype of specific bitrate
-            3. We downquantize by right shifting
-            4. We return the array of specific bitrate type
+            1. Add dithering to the original audio
+            2. Create an array of zeros that has datatype of specific bitrate
+            3. Downquantize by right shifting
+            4. Return the array of specific bitrate type
         """
-        # dithered = self.add_dither(original, original_br, new_br)
-        dithered = self.add_triangular_dither(original,original_br, new_br)        
-        arr_type = self.array_type(new_br)
-        
+        dithered = self.add_triangular_dither(original,original_br, new_br)                
         dithered = dithered.astype(np.int32)
-        down_quantized = np.zeros(len(dithered), dtype=arr_type)
+        down_quantized = np.zeros(len(dithered), dtype=np.int32)
         
-
         for i in range(len(dithered)):
             down_quantized[i] = dithered[i]>>(original_br-new_br)
-        return down_quantized.astype(arr_type)
+        return down_quantized
         
 
 
