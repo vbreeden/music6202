@@ -307,9 +307,9 @@ if __name__ == '__main__':
 
         t = len(res)/Fs
         down_sampled_data = output.down_sample(res, down_factor, output.output_sample_rate, Fs)
-        print("down_sampled_data : ",down_sampled_data)
+        print("down_sampled_data : ", down_sampled_data)
         res = output.up_sample(down_sampled_data, int(Fs/down_factor), output.output_sample_rate, t)
-        print("Res after down sample:",res)
+        print("Res after down sample:", res)
 
     if args.bitrate is not None:
         output.output_bit_rate = int(args.bitrate[0][0])

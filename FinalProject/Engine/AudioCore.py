@@ -19,6 +19,7 @@ class Buffer:
     def create_buffer(self, seconds=0.0):
         self.buffer = np.zeros(int(ceil(self.sr * seconds)))
 
+
 @dataclass
 class Notes:
     kern_file: str = ''
@@ -70,6 +71,7 @@ class Notes:
             last_duration = duration
 
             i += 1
+
 
 @dataclass
 class Downsampler:
@@ -124,28 +126,36 @@ class Downsampler:
         return new_signal 
 
     # down_quantization: function to perform dithering and return the down-quantized signal
-    def down_quantization(self, original, original_br, new_br, dither=1):
-        if dither:
-            dithered = self.add_dither(original)
+    def down_quantization(self, original, original_br, new_br):
+        # Because our signal started the downsampling chain as an int32, we can recast it as an int32 before doing
+        # further processing.
+        dithered = self.add_dither(original)
+        dithered = dithered.astype(np.int32)
+
+        maxval = np.max(np.abs(dithered))
+        bitlength = np.ceil(np.log2(maxval)).astype(int)
+
+        if original_br > new_br:
+            bit_shift = (original_br - new_br) + 1
         else:
-            dithered = original
-        print("newbr=", new_br)
+            bit_shift = 0
 
-        # down_quantized = ((dithered / 2**original_br) * 2**new_br)
+        if bit_shift - 1 == 16:
+            down_quantized = (dithered >> bit_shift)
+            down_quantized = down_quantized.astype(np.int16)
+        elif bit_shift - 1 == 24:
+            down_quantized = (dithered >> bit_shift)
 
-        down_quantized = dithered.astype(np.int64)
-        down_quantized = (down_quantized >> 16)
+            # Because of the power loss with the drop to 16 bits the amplitude needs to be doubled.
+            down_quantized *= 3
 
-        down_quantized = down_quantized.astype(np.int16)
-
-        print(2)
-
-        # a = np.right_shift(dithered, original_br)
-        # down_quantized = np.left_shift(a, new_br)
-
-        # a =  (dithered >> original_br)
-        # down_quantized = (a << new_br)
-        # print("a: ", a)
+            # Because of limitations in scipy's wave writing function, we need to encode this as a 16 bit integer.
+            # However, the commented code reveals that only 8 bits are needed to encode the data.
+            maxval_down = np.max(np.abs(down_quantized))
+            bitlength_down = np.ceil(np.log2(maxval_down)).astype(int)
+            down_quantized = down_quantized.astype(np.int16)
+        else:
+            down_quantized = original
 
         return down_quantized
 

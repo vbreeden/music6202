@@ -22,5 +22,6 @@ requests==2.25.1
 scipy==1.6.0
 six==1.15.0
 SoundFile==0.10.3.post1
+subtypes==0.1.19
 urllib3==1.26.4
 webcolors==1.11.1
