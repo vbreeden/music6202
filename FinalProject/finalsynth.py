@@ -8,11 +8,12 @@ import argparse
 import numpy as np
 from Engine.AudioCore import Notes
 from Engine.Synth import AdditiveSynth, WavetableSynth
-# from FinalProject.Effects.Convolution import Reverb
+from FinalProject.Effects.Convolution import Reverb
 # from FinalProject.Effects.Filter import Bandpass, Lowpass
 # from FinalProject.Effects.Modulation import Chorus, Delay, Vibrato
 from Effects.Modulation import Vibrato
 # from FinalProject.Engine.Synth import AdditiveSynth, WavetableSynth
+
 
 # This is the parser that will parse commandline arguments.
 parser = argparse.ArgumentParser()
@@ -139,6 +140,9 @@ if __name__ == '__main__':
         print('Only additive and wavetable synths are supported.')
         exit(0)
 
+    if args.reverb is not None:
+        reverb = Reverb()
+
     if args.vibrato is not None:
         vibrato = Vibrato()
 
@@ -187,7 +191,7 @@ if __name__ == '__main__':
         elif effect == 'vibrato':
             if args.vibrato is not None:
                 vibrato_arg_list = args.vibrato[vibrato_count]
-                if vibrato_arg_list is not None and len(vibrato_arg_list) < 2:
+                if vibrato_arg_list is not None and len(vibrato_arg_list) >= 2:
                     max_delay_samps = int(vibrato_arg_list[0])
                     fmod = int(vibrato_arg_list[1])
                 # set default max delay and frequency modulation if no input parameters are provided
@@ -211,6 +215,35 @@ if __name__ == '__main__':
             # print(lowpass_arg_list)
         elif effect == 'reverb':
             reverb_arg_list = args.reverb[reverb_count]
+
+            if len(reverb_arg_list) >= 2:
+                percent_mix = float(reverb_arg_list[1])
+                # If the percent_mix is greater than 1, be nice and warn the user but also set it to 1
+                if percent_mix > 1.0:
+                    print('Wet/dry mix percentages must be between 0 and 1. '
+                          'The value {percent_mix} was provided so we are defaulting to 1.')
+                    percent_mix = 1.0
+            else:
+                print('No wet/dry mix percentage was provided for the reverb, defaulting to a 50% blend.')
+                percent_mix = 0.5
+
+            if str(reverb_arg_list[0]) == 'big_hall':
+                synthesizer.wave = reverb.apply_reverb(synthesizer.wave, 'big_hall.wav', percent_mix=percent_mix)
+            elif str(reverb_arg_list[0]) == 'big_room':
+                synthesizer.wave = reverb.apply_reverb(synthesizer.wave, 'big_room.wav', percent_mix=percent_mix)
+            elif str(reverb_arg_list[0]) == 'box':
+                synthesizer.wave = reverb.apply_reverb(synthesizer.wave, 'box.wav', percent_mix=percent_mix)
+            elif str(reverb_arg_list[0]) == 'drum_plate':
+                synthesizer.wave = reverb.apply_reverb(synthesizer.wave, 'drum_plate.wav', percent_mix=percent_mix)
+            elif str(reverb_arg_list[0]) == 'jazz_hall':
+                synthesizer.wave = reverb.apply_reverb(synthesizer.wave, 'jazz_hall.wav', percent_mix=percent_mix)
+            elif str(reverb_arg_list[0]) == 'wet_reverb':
+                synthesizer.wave = reverb.apply_reverb(synthesizer.wave, 'wet_reverb.wav', percent_mix=percent_mix)
+            else:
+                print("'big_hall', 'big_room', 'box', 'drum_plate', 'jazz_hall', and 'wet_reverb' are the only reverbs "
+                      "currently available.")
+                exit(0)
+
             reverb_count += 1
             # print('put reverb call here.')
             print(reverb_arg_list)
