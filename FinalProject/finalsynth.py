@@ -219,7 +219,7 @@ if __name__ == '__main__':
             internal_sr = 48000
             if delay_arg_list is not None and len(delay_arg_list) >= 2:
                 # TODO: Remember to make the internal SR global to the system.
-                delay_samples = int(int(delay_arg_list[0]) * internal_sr)
+                delay_samples = int(float(delay_arg_list[0]) * internal_sr)
                 percent_mix = float(delay_arg_list[1])
             else:
                 print('The number of seconds to delay and mix percentage must be provided to implement delay. '
