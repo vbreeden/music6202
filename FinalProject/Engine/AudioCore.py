@@ -8,7 +8,6 @@ from scipy import signal
 import wavio
 
 
-
 @dataclass
 class Buffer:
     sr: float = 48000
@@ -16,6 +15,7 @@ class Buffer:
 
     def create_buffer(self, seconds=0.0):
         self.buffer = np.zeros(int(ceil(self.sr * seconds)))
+
 
 @dataclass
 class Notes:
@@ -69,6 +69,7 @@ class Notes:
 
             i += 1
 
+
 @dataclass
 class Downsampler:
     output_sample_rate: int = 48000
@@ -88,7 +89,8 @@ class Downsampler:
         
         wavio.write(wave_file_path, data, fs, sampwidth=sampwidth)
 
-    # Low pass filter (type of low pass: butter) : function to remove the frequencies above the Shannon Nyquist frequency
+    # Low pass filter (type of low pass: butter) : function to remove the frequencies above
+    # the Shannon Nyquist frequency
     def low_pass(self, data, Fs_new, Fs):
         b, a =signal.butter(N=2, Wn=Fs_new/2, btype='low', analog=False, fs=Fs)
         filtered = signal.filtfilt(b, a, data)
@@ -116,17 +118,17 @@ class Downsampler:
         return self.cubic_interpolate(data, t, new_samples)
 
     def add_triangular_dither(self, original, original_br, new_br):
-        #shape = original_br-new_br #calculate the noise shape based on the difference between original and new bitrate.
+        # shape = original_br-new_br #calculate the noise shape based on the difference
+        # between original and new bitrate.
         diff = original_br - new_br
         left = (-1)*(2**diff)
         mode = 0
         right = (2**diff) - 1
-        size = (original.shape) 
-        noise = np.random.triangular(left, mode, right, size) #generate noise with mean = 0 and standard dev = 0.01
+        size = original.shape
+        noise = np.random.triangular(left, mode, right, size)  # generate noise with mean = 0 and standard dev = 0.01
         noise = noise.astype(np.int32)
 
-        self.write_wav("noise.wav", noise, 41000, diff)
-        new_signal = original + noise  #add noise to the signal to generate signal with added dither
+        new_signal = original + noise  # add noise to the signal to generate signal with added dither
         return new_signal 
 
     # down_quantization: function to perform dithering and return the down-quantized signal
