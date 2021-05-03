@@ -16,6 +16,7 @@ from Effects.Modulation import Delay, Vibrato, Chorus
 
 # This is the parser that will parse commandline arguments.
 parser = argparse.ArgumentParser()
+SAMPLE_RATE = 48000
 
 
 # Custom arguments are added here. By default, argparse provides a Help argument. It can be accessed using:
@@ -213,10 +214,9 @@ if __name__ == '__main__':
             chorus_count += 1
         elif effect == 'delay':
             delay_arg_list = args.delay[delay_count]
-            internal_sr = 48000
             if delay_arg_list is not None and len(delay_arg_list) >= 2:
                 # TODO: Remember to make the internal SR global to the system.
-                delay_samples = int(float(delay_arg_list[0]) * internal_sr)
+                delay_samples = int(float(delay_arg_list[0]) * SAMPLE_RATE)
                 percent_mix = float(delay_arg_list[1])
             else:
                 print('The number of seconds to delay and mix percentage must be provided to implement delay. '
@@ -240,7 +240,6 @@ if __name__ == '__main__':
             synthesizer.wave = vibrato.apply_vibrato(synthesizer.wave, max_delay_samps, fmod)
             vibrato_count += 1
         elif effect == 'bandpass':
-            fs = 48000
             if args.bandpass is not None:
                 bandpass_arg_list = args.bandpass[bandpass_count]
                 if bandpass_arg_list is not None and len(bandpass_arg_list) >= 2:
@@ -251,10 +250,9 @@ if __name__ == '__main__':
                           'Defaulting to 150Hz and 15000Hz')
                     lowcut = 150
                     highcut = 15000
-                synthesizer.wave = bandpass.band_pass(synthesizer.wave, lowcut, highcut, fs)
+                synthesizer.wave = bandpass.band_pass(synthesizer.wave, lowcut, highcut, SAMPLE_RATE)
             bandpass_count += 1
         elif effect == 'lowpass':
-            fs = 48000
             if args.lowpass is not None:
                 lowpass_arg_list = args.lowpass[lowpass_count]
                 if lowpass_arg_list is not None and len(lowpass_arg_list) >= 1:
@@ -263,7 +261,7 @@ if __name__ == '__main__':
                     print('A critical frequency is required to use lowpass. '
                           'Defaulting to 1000Hz')
                     critical_freq = 10000
-                synthesizer.wave = lowpass.low_pass(synthesizer.wave, critical_freq, fs)
+                synthesizer.wave = lowpass.low_pass(synthesizer.wave, critical_freq, SAMPLE_RATE)
             lowpass_count += 1
         elif effect == 'reverb':
             reverb_arg_list = args.reverb[reverb_count]
@@ -308,11 +306,10 @@ if __name__ == '__main__':
     if args.samplerate is not None:
         output.output_sample_rate = int(args.samplerate[0][0])
 
-        Fs = 48000
-        down_factor = ceil(Fs/float(output.output_sample_rate))
-        t = len(synthesizer.wave)/Fs
-        down_sampled_data = output.down_sample(synthesizer.wave, down_factor, output.output_sample_rate, Fs)
-        res = output.up_sample(down_sampled_data, int(Fs/down_factor), output.output_sample_rate, t)
+        down_factor = ceil(SAMPLE_RATE/float(output.output_sample_rate))
+        t = len(synthesizer.wave)/SAMPLE_RATE
+        down_sampled_data = output.down_sample(synthesizer.wave, down_factor, output.output_sample_rate, SAMPLE_RATE)
+        res = output.up_sample(down_sampled_data, int(SAMPLE_RATE/down_factor), output.output_sample_rate, t)
     else:
         print('A sample rate must be provided.')
         exit(0)
