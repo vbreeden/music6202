@@ -178,7 +178,6 @@ if __name__ == '__main__':
     if synth.lower() == 'wavetable':
         synthesizer = WavetableSynth()
         synthesizer.generate_wavetable(notes, timbre, sweep, speed)
-        # print('We will want to return the created audio data to this point so we can pass it through the effects')
     elif synth.lower() == 'additive':
         synthesizer = AdditiveSynth()
         synthesizer.generate_additive_wav(notes, add_synth_type)
@@ -210,12 +209,8 @@ if __name__ == '__main__':
             else:
                 maxDelaySamps = 50
                 fmod = 1
-            print('in finalsynth : max_delay_samps', max_delay_samps)
-            print('in finalsynth : fmod', fmod)
             synthesizer.wave = chorus.apply_chorus(synthesizer.wave, max_delay_samps, fmod)
             chorus_count += 1
-            print('put chorus call here.')
-            print(chorus_arg_list)
         elif effect == 'delay':
             delay_arg_list = args.delay[delay_count]
             internal_sr = 48000
@@ -230,8 +225,6 @@ if __name__ == '__main__':
                 percent_mix = 0
             synthesizer.wave = delay.apply_delay(synthesizer.wave, delay_samples, percent_mix)
             delay_count += 1
-            print('put delay call here.')
-            # print(delay_arg_list)
         elif effect == 'vibrato':
             if args.vibrato is not None:
                 vibrato_arg_list = args.vibrato[vibrato_count]
@@ -246,7 +239,6 @@ if __name__ == '__main__':
                     fmod = 1
             synthesizer.wave = vibrato.apply_vibrato(synthesizer.wave, max_delay_samps, fmod)
             vibrato_count += 1
-            # print(vibrato_arg_list)
         elif effect == 'bandpass':
             fs = 48000
             if args.bandpass is not None:
@@ -261,8 +253,6 @@ if __name__ == '__main__':
                     highcut = 15000
                 synthesizer.wave = bandpass.band_pass(synthesizer.wave, lowcut, highcut, fs)
             bandpass_count += 1
-            print('put bandpass call here.')
-            # print(bandpass_arg_list)
         elif effect == 'lowpass':
             fs = 48000
             if args.lowpass is not None:
@@ -275,8 +265,6 @@ if __name__ == '__main__':
                     critical_freq = 10000
                 synthesizer.wave = lowpass.low_pass(synthesizer.wave, critical_freq, fs)
             lowpass_count += 1
-            print('put lowpass call here.')
-            # print(lowpass_arg_list)
         elif effect == 'reverb':
             reverb_arg_list = args.reverb[reverb_count]
 
@@ -309,10 +297,8 @@ if __name__ == '__main__':
                 exit(0)
 
             reverb_count += 1
-            print(reverb_arg_list)
 
-    # Down-sample and write-to-audio function calls should be placed here.
-
+    # Down-sampling code is provided below.
     data = np.asarray(synthesizer.wave, dtype=np.int32)
     data = data.astype(np.int32)
 
