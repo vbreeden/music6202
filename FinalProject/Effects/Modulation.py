@@ -105,8 +105,6 @@ class Delay:
             ring_buf.pushSample(s)
             delay[i] = s * percent_mix + ring_buf.delayedSample(delay_samples) * (1 - percent_mix)
 
-        # self.wave_file_path = 'DelayLine'
-        # write(self.wave_file_path + ".wav", SAMPLE_RATE, np.array(delay))
         return delay
 
 
@@ -134,6 +132,4 @@ class Vibrato:
             while phi >= 1:
                 phi -= 1
 
-        # self.wave_file_path = 'vibrato'
-        # write(self.wave_file_path + ".wav", SAMPLE_RATE, np.array(y))
         return y

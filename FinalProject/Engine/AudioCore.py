@@ -118,7 +118,8 @@ class Downsampler:
         return self.cubic_interpolate(data, t, new_samples)
 
     def add_triangular_dither(self, original, original_br, new_br):
-        # shape = original_br-new_br #calculate the noise shape based on the difference
+        # shape = original_br-new_br
+        # calculate the noise shape based on the difference
         # between original and new bitrate.
         diff = original_br - new_br
         left = (-1)*(2**diff)
@@ -145,8 +146,5 @@ class Downsampler:
         down_quantized = np.zeros(len(dithered), dtype=np.int32)
         
         for i in range(len(dithered)):
-            down_quantized[i] = dithered[i]>>(original_br-new_br)
+            down_quantized[i] = dithered[i] >> (original_br-new_br)
         return down_quantized
-        
-
-

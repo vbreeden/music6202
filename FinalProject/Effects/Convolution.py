@@ -9,7 +9,6 @@ SAMPLE_RATE = 48000
 
 @dataclass
 class Reverb:
-    wave_file_path: str = 'Reverb'
     wave: list[float] = field(default_factory=list)
     ir: list[float] = field(default_factory=list)
 
@@ -33,7 +32,5 @@ class Reverb:
 
         # Re-assign the convolved wave as a mixture of the wet and dry signals.
         convolved_wave = dry_signal + wet_signal
-
-        write(self.wave_file_path + ".wav", SAMPLE_RATE, np.array(convolved_wave))
 
         return convolved_wave

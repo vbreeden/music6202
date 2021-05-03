@@ -178,5 +178,3 @@ class WavetableSynth:
         self.wave = self.wave.astype(np.int32)
 
         return self.wave
-
-
