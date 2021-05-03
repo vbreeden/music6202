@@ -12,8 +12,8 @@ from Engine.Synth import AdditiveSynth, WavetableSynth
 from scipy.io.wavfile import read, write
 from soundfile import SoundFile
 
-from FinalProject.Effects.Convolution import Reverb
-from FinalProject.Effects.Filter import Bandpass, Lowpass
+from Effects.Convolution import Reverb
+from Effects.Filter import Bandpass, Lowpass
 from Effects.Modulation import Delay, Vibrato, Chorus
 
 # This is the parser that will parse commandline arguments.
@@ -168,6 +168,8 @@ if __name__ == '__main__':
         chorus = Chorus()
     if args.bandpass is not None:
         bandpass = Bandpass()
+    if args.lowpass is not None:
+        lowpass = Lowpass()
 
     notes = Notes()
     notes.parse_kern(kern_file=kern_file)
@@ -264,7 +266,16 @@ if __name__ == '__main__':
             print('put bandpass call here.')
             # print(bandpass_arg_list)
         elif effect == 'lowpass':
-            lowpass_arg_list = args.lowpass[lowpass_count]
+            fs = 48000
+            if args.lowpass is not None:
+                lowpass_arg_list = args.lowpass[lowpass_count]
+                if lowpass_arg_list is not None and len(lowpass_arg_list) >= 1:
+                    critical_freq = int(lowpass_arg_list[0])
+                else:
+                    print('A critical frequency is required to use lowpass. '
+                          'Defaulting to 1000Hz')
+                    critical_freq = 10000
+                synthesizer.wave = lowpass.low_pass(synthesizer.wave, critical_freq, fs)
             lowpass_count += 1
             print('put lowpass call here.')
             # print(lowpass_arg_list)
