@@ -59,7 +59,7 @@ class LinearWrap(object):
 class Chorus:
     wave_file_path: str = 'chorus.wav'
 
-    def apply_chorus(self, wave, maxDelaySamps, fmod):
+    def apply_chorus(self, wave, max_delay_samps, fmod):
 
         # Simple Chorus
         # x, sr = sf.read('input/sv.wav')
@@ -67,7 +67,7 @@ class Chorus:
         print(type(x))
         # output = 'output/sv_simpleChorus.wav'
 
-        fmod = 1.5
+        # fmod = 1.5
         A = int(0.002 * SAMPLE_RATE)
         M = int(0.002 * SAMPLE_RATE)
         BL = 1.0
@@ -76,26 +76,27 @@ class Chorus:
         if A > M:
             raise RuntimeError("Amplitude of vibrato too high for delay length")
 
-        maxDelaySamps = M + A + 2 # Probably don't need the 2 here, but being safe
-        outputSamps = len(x) + maxDelaySamps
-        y = np.zeros(outputSamps)
-        ringBuf = LinearRingBuffer(maxDelaySamps)
-        deltaPhi = fmod/SAMPLE_RATE
+        # max_delay_samps = M + A + 2  # Probably don't need the 2 here, but being safe
+        output_samps = len(x) + max_delay_samps
+        y = np.zeros(output_samps)
+        ring_buf = LinearRingBuffer(max_delay_samps)
+        delta_phi = fmod/SAMPLE_RATE
         phi = 0
 
-        for i in range(outputSamps):
+        for i in range(output_samps):
             s = x[i]
-            ringBuf.pushSample(s)
-            delaySamps = M + int(math.sin(2 * math.pi * phi) * A)
-            y[i] = s * BL + ringBuf.delayedSample(delaySamps) * FF
+            ring_buf.pushSample(s)
+            delay_samps = M + int(math.sin(2 * math.pi * phi) * A)
+            y[i] = s * BL + ring_buf.delayedSample(delay_samps) * FF
 
-            phi = phi + deltaPhi
+            phi = phi + delta_phi
             while phi >= 1:
                 phi -= 1
 
         write(self.wave_file_path, SAMPLE_RATE, np.array(y))
 
         return y
+
 
 @dataclass
 class Delay:

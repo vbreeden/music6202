@@ -1,7 +1,7 @@
 import numpy as np
 from dataclasses import dataclass, field
 from scipy.io.wavfile import write, read
-from scipy.signal import convolve, fftconvolve
+from scipy.signal import fftconvolve
 
 
 SAMPLE_RATE = 48000
