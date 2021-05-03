@@ -55,7 +55,6 @@ class LinearWrap(object):
 
 @dataclass
 class Chorus:
-    wave_file_path: str = 'chorus.wav'
 
     def apply_chorus(self, wave, max_delay_samps, fmod):
 
@@ -93,7 +92,6 @@ class Chorus:
 
 @dataclass
 class Delay:
-    wave_file_path: str = 'DelayLine'
 
     def apply_delay(self, wave, delay_samples, percent_mix=0.5):
         linear_wrap = LinearWrap(wave)
@@ -114,7 +112,6 @@ class Delay:
 
 @dataclass
 class Vibrato:
-    wave_file_path: str = 'Vibrato'
     wave: np.ndarray = np.zeros(0)
 
     def apply_vibrato(self, wave, max_delay_samps, fmod):
