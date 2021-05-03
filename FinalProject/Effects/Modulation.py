@@ -67,16 +67,16 @@ class Chorus:
         print(type(x))
         # output = 'output/sv_simpleChorus.wav'
 
-        # fmod = 1.5
+        fmod = 1.5
         A = int(0.002 * SAMPLE_RATE)
         M = int(0.002 * SAMPLE_RATE)
-        BL = 1.0
+        BL = 0.3
         FF = 0.7
 
         if A > M:
             raise RuntimeError("Amplitude of vibrato too high for delay length")
 
-        # max_delay_samps = M + A + 2  # Probably don't need the 2 here, but being safe
+        max_delay_samps = M + A + 2  # Probably don't need the 2 here, but being safe
         output_samps = len(x) + max_delay_samps
         y = np.zeros(output_samps)
         ring_buf = LinearRingBuffer(max_delay_samps)
