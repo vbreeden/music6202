@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 import numpy as np
 import math
-from scipy.io.wavfile import write
-import matplotlib.pyplot as plt
 
 # code for ring buffer and modulated effects adapted from Andrew Beck's code in 19-ModulatedEffects.ipynb
 
@@ -62,10 +60,7 @@ class Chorus:
     def apply_chorus(self, wave, max_delay_samps, fmod):
 
         # Simple Chorus
-        # x, sr = sf.read('input/sv.wav')
         x = LinearWrap(wave)
-        print(type(x))
-        # output = 'output/sv_simpleChorus.wav'
 
         # fmod = 1.5
         A = int(0.002 * SAMPLE_RATE)
@@ -112,8 +107,8 @@ class Delay:
             ring_buf.pushSample(s)
             delay[i] = s * percent_mix + ring_buf.delayedSample(delay_samples) * (1 - percent_mix)
 
-        self.wave_file_path = 'DelayLine'
-        write(self.wave_file_path + ".wav", SAMPLE_RATE, np.array(delay))
+        # self.wave_file_path = 'DelayLine'
+        # write(self.wave_file_path + ".wav", SAMPLE_RATE, np.array(delay))
         return delay
 
 
@@ -142,15 +137,6 @@ class Vibrato:
             while phi >= 1:
                 phi -= 1
 
-        plt.plot(y)
-        plt.savefig('vibratoplot.jpg')
-        plt.close()
-        plt.plot(y[0:1000])
-        plt.savefig('vibratoplot_subset.jpg')
-        plt.close()
-        plt.plot(y[46000:50000])
-        plt.savefig('vibratoplot_subset2.jpg')
-        plt.close()
-        self.wave_file_path = 'vibrato'
-        write(self.wave_file_path + ".wav", SAMPLE_RATE, np.array(y))
+        # self.wave_file_path = 'vibrato'
+        # write(self.wave_file_path + ".wav", SAMPLE_RATE, np.array(y))
         return y
