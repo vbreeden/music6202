@@ -3,11 +3,6 @@ from math import ceil
 import numpy as np
 from dataclasses import dataclass, field
 from music21 import converter
-import matplotlib.pyplot as plt
-import soundfile as sf
-from soundfile import SoundFile, write
-from subtypes import Subtype
-import scipy
 from scipy.interpolate import interp1d
 from scipy import signal
 import wavio

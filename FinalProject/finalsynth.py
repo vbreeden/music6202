@@ -9,8 +9,6 @@ import numpy as np
 from math import ceil
 from Engine.AudioCore import Notes, Downsampler
 from Engine.Synth import AdditiveSynth, WavetableSynth
-from scipy.io.wavfile import read, write
-from soundfile import SoundFile
 
 from Effects.Convolution import Reverb
 from Effects.Filter import Bandpass, Lowpass
@@ -43,38 +41,38 @@ def define_args():
     #                          'Ex: finalsynth -s wavetable -m 5 -w sweep -p .5')
 
     # Modulation effects
-    parser.add_argument('-c', '--chorus', nargs='+', action='append', help='Add a chorus effect to the signal path.'
-                                                                           'Ex: finalsynth -c 200 1.5')
-    parser.add_argument('-d', '--delay', nargs='+', action='append', help='Add a delay effect to the signal path.'
-                                                                          'Ex: finalsynth -d DelayParam')
+    parser.add_argument('-c', '--chorus', nargs='+', action='append',
+                        help='Add a chorus effect to the signal path. Ex: finalsynth -c 200 1.5')
+    parser.add_argument('-d', '--delay', nargs='+', action='append',
+                        help='Add a delay effect to the signal path. Ex: finalsynth -d DelayParam')
     parser.add_argument('-v', '--vibrato', nargs='+', action='append',
                         help='Add a vibrato to the signal path. Pass in max delay samples and frequency modulation. '
                              'Ex: finalsynth -v 200 1')
 
     # Filters
-    parser.add_argument('-b', '--bandpass', nargs='+', action='append', help='Add a bandpass filter to the signal path.'
-                                                                             'Ex: finalsynth -b 400Hz 500Hz')
-    parser.add_argument('-l', '--lowpass', nargs='+', action='append', help='Add a lowpass filter to the signal path.'
-                                                                            'Ex: finalsynth -l 100Hz')
+    parser.add_argument('-b', '--bandpass', nargs='+', action='append',
+                        help='Add a bandpass filter to the signal path. Ex: finalsynth -b 400Hz 500Hz')
+    parser.add_argument('-l', '--lowpass', nargs='+', action='append',
+                        help='Add a lowpass filter to the signal path. Ex: finalsynth -l 100Hz')
 
     # Convolution effects
-    parser.add_argument('-r', '--reverb', nargs='+', action='append', help='Add a reverb effect to the signal path '
-                                                                           'that utilizes a provided impulse response '
-                                                                           'wav file. Ex: finalsynth -r IR.wav')
+    parser.add_argument('-r', '--reverb', nargs='+', action='append',
+                        help='Add a reverb effect to the signal path that utilizes a provided impulse response '
+                             'wav file. Ex: finalsynth -r IR.wav 0.4')
 
     # Kern files
-    parser.add_argument('-k', '--kern', nargs='+', action='append', help='Provide the name of the input file in kern '
-                                                                         'format. Ex: finalsynth -k melody1.krn')
+    parser.add_argument('-k', '--kern', nargs='+', action='append',
+                        help='Provide the name of the input file in kern format. Ex: finalsynth -k melody1.krn')
 
     # Down-sample frequency
-    parser.add_argument('-a', '--samplerate', nargs='+', action='append', help='Provide provide the desired sample rate '
-                                                                                'Ex: finalsynth -a 41000')
+    parser.add_argument('-a', '--samplerate', nargs='+', action='append',
+                        help='Provide provide the desired sample rate Ex: finalsynth -a 41000')
     # Down-quantize bitrate
-    parser.add_argument('-q', '--bitrate', nargs='+', action='append', help='Provide the desired bit rate'
-                                                                                'Ex: finalsynth -q 16')
+    parser.add_argument('-q', '--bitrate', nargs='+', action='append',
+                        help='Provide the desired bit rate Ex: finalsynth -q 16')
     # Output file
-    parser.add_argument('-o', '--output', nargs='+', action='append', help='Provide the name of the output file in wav '
-                                                                                'Ex: finalsynth -o my_music.wav')
+    parser.add_argument('-o', '--output', nargs='+', action='append',
+                        help='Provide the name of the output file in wav Ex: finalsynth -o my_music.wav')
     return parser.parse_args()
 
 
@@ -205,16 +203,16 @@ if __name__ == '__main__':
             if args.chorus is not None:
                 chorus_arg_list = args.chorus[chorus_count]
                 chorus_arg_list = args.chorus[chorus_count]
-                maxDelaySamps = int(chorus_arg_list[0])
+                max_delay_samps = int(chorus_arg_list[0])
                 fmod = float(chorus_arg_list[1])
                 chorus_count += 1
                 print(chorus_arg_list)
             else:
                 maxDelaySamps = 50
                 fmod = 1
-            print('in finalsynth : maxDelaySamps',maxDelaySamps)
-            print('in finalsynth : fmod',fmod)
-            synthesizer.wave = chorus.apply_chorus(synthesizer.wave, maxDelaySamps, fmod)
+            print('in finalsynth : max_delay_samps', max_delay_samps)
+            print('in finalsynth : fmod', fmod)
+            synthesizer.wave = chorus.apply_chorus(synthesizer.wave, max_delay_samps, fmod)
             chorus_count += 1
             print('put chorus call here.')
             print(chorus_arg_list)
@@ -311,14 +309,12 @@ if __name__ == '__main__':
                 exit(0)
 
             reverb_count += 1
-            # print('put reverb call here.')
             print(reverb_arg_list)
 
     # Down-sample and write-to-audio function calls should be placed here.
 
     data = np.asarray(synthesizer.wave, dtype=np.int32)
     data = data.astype(np.int32)
-    # write(wave_file_path, fs, data)
 
     output = Downsampler()
     res = data
@@ -329,17 +325,17 @@ if __name__ == '__main__':
         Fs = 48000
         down_factor = ceil(Fs/float(output.output_sample_rate))
         t = len(synthesizer.wave)/Fs
-        down_sampled_data = output.down_sample(synthesizer.wave, down_factor, output.output_sample_rate,Fs)
+        down_sampled_data = output.down_sample(synthesizer.wave, down_factor, output.output_sample_rate, Fs)
         res = output.up_sample(down_sampled_data, int(Fs/down_factor), output.output_sample_rate, t)
-        # write(wave_file_path, output.output_sample_rate, res)
-
+    else:
+        print('A sample rate must be provided.')
+        exit(0)
 
     if args.bitrate is not None:
         output.output_bit_rate = int(args.bitrate[0][0])
         dq1 = output.down_quantization(res, 32, output.output_bit_rate)
+    else:
+        print('A bitrate of 8, 16, or 24 must be provided.')
+        exit(0)
 
     output.write_wav(args.output[0][0], dq1, output.output_sample_rate, output.output_bit_rate)
-
-    # This line exists as a convenient place to put a breakpoint for inspecting stored data. It will need
-    # to be removed before delivery.
-    #print(args)

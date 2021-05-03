@@ -1,6 +1,4 @@
 from dataclasses import dataclass, field
-from scipy.io.wavfile import write
-import matplotlib.pyplot as plt
 import numpy as np
 
 SAMPLE_RATE = 48000
