@@ -7,6 +7,8 @@ import sys
 import argparse
 import numpy as np
 from math import ceil
+from alive_progress import alive_bar
+
 from Engine.AudioCore import Notes, Downsampler
 from Engine.Synth import AdditiveSynth, WavetableSynth
 
@@ -108,217 +110,226 @@ def get_effects_list():
 
 
 if __name__ == '__main__':
-    # Retrieve the argument information
-    args = define_args()
-    print(args)
-    effects_list = get_effects_list()
+    with alive_bar(5, 'Cooking some tasty tunes...',bar='blocks',spinner = 'notes_scrolling') as bar:
+        # Retrieve the argument information
+        args = define_args()
+        # print(args)
+        effects_list = get_effects_list()
 
-    # The kern file declaration is here to prevent the debugger from posting any undeclared-variable warnings.
-    kern_file = ''
-    if args.kern is not None:
-        kern_file = args.kern[0][0]
-    else:
-        print('A kern file must be passed to the synthesizer.')
-        exit(0)
-
-    synth = ''
-    if args.synth is not None:
-        synth = args.synth[0][0]
-    else:
-        print('A synth engine must be selected.')
-        exit(0)
-
-    if synth == 'additive':
-        # print('Do additive stuff here.')
-        add_synth_type = str(args.synth[0][1]).lower()
-        if add_synth_type != 'square' and add_synth_type != 'sine':
-            print("The only valid additive synthesizer types are 'square' and 'sine'.")
-    elif synth == 'wavetable':
-        if len(args.synth[0]) >= 3:
-            timbre = np.abs(int(args.synth[0][1]))
-            if timbre > 10:
-                timbre = 10  # Gracefully accept any number, but cap it at 10.
-            sweep = str(args.synth[0][2]).lower()
-            if sweep.lower() == 'sweep':
-                if len(args.synth[0]) >= 4:
-                    speed = np.abs(float(args.synth[0][3]))
-                else:
-                    print('When passing a sweeping signal, a sweep period must be provided.')
-                    exit(0)
-            else:
-                speed = 0
+        # The kern file declaration is here to prevent the debugger from posting any undeclared-variable warnings.
+        kern_file = ''
+        if args.kern is not None:
+            kern_file = args.kern[0][0]
         else:
-            print('The timbre value and sweep/static arguments must be passed with the wavetable.')
-            print("If 'sweep' is passed as a parameter, a sweep period must also be passed.")
+            print('A kern file must be passed to the synthesizer.')
             exit(0)
-    else:
-        print('Only additive and wavetable synths are supported.')
-        exit(0)
 
-    if args.delay is not None:
-        delay = Delay()
+        synth = ''
+        if args.synth is not None:
+            synth = args.synth[0][0]
+        else:
+            print('A synth engine must be selected.')
+            exit(0)
 
-    if args.reverb is not None:
-        reverb = Reverb()
-
-    if args.vibrato is not None:
-        vibrato = Vibrato()
-    if args.chorus is not None:
-        chorus = Chorus()
-    if args.bandpass is not None:
-        bandpass = Bandpass()
-    if args.lowpass is not None:
-        lowpass = Lowpass()
-
-    notes = Notes()
-    notes.parse_kern(kern_file=kern_file)
-
-    args_ordered = sys.argv
-
-    # Use the synth engine selected by the user to digitize the melody from the kern file.
-    if synth.lower() == 'wavetable':
-        synthesizer = WavetableSynth()
-        synthesizer.generate_wavetable(notes, timbre, sweep, speed)
-    elif synth.lower() == 'additive':
-        synthesizer = AdditiveSynth()
-        synthesizer.generate_additive_wav(notes, add_synth_type)
-    else:
-        print('Additive and Wavetable are the only valid synthesizer options.')
-        exit(0)
-
-    chorus_count = 0
-    delay_count = 0
-    vibrato_count = 0
-    bandpass_count = 0
-    lowpass_count = 0
-    reverb_count = 0
-
-    # Loop through the effects selected by the user and apply them to the melody in order.
-    # The arg_list lists will contain the list of arguments passed in by the user that are associated with that
-    # instance of that argument. This is the cleanest way I could come up with to separate multiple instances of an
-    # Effect. For example, if the user inserts a low pass filter more than once then args.lowpass[0] will have the
-    # arguments for the first lowpass filter, and args.lowpass[1] will have the arguments for the second lowpass filter.
-    for effect in effects_list:
-        if effect == 'chorus':
-            if args.chorus is not None:
-                chorus_arg_list = args.chorus[chorus_count]
-                chorus_arg_list = args.chorus[chorus_count]
-                max_delay_samps = int(chorus_arg_list[0])
-                fmod = float(chorus_arg_list[1])
-                chorus_count += 1
-                print(chorus_arg_list)
-            else:
-                maxDelaySamps = 50
-                fmod = 1
-            synthesizer.wave = chorus.apply_chorus(synthesizer.wave, max_delay_samps, fmod)
-            chorus_count += 1
-        elif effect == 'delay':
-            delay_arg_list = args.delay[delay_count]
-            if delay_arg_list is not None and len(delay_arg_list) >= 2:
-                # TODO: Remember to make the internal SR global to the system.
-                delay_samples = int(float(delay_arg_list[0]) * SAMPLE_RATE)
-                percent_mix = float(delay_arg_list[1])
-            else:
-                print('The number of seconds to delay and mix percentage must be provided to implement delay. '
-                      'Defaulting to no delay.')
-                delay_samples = 0
-                percent_mix = 0
-            synthesizer.wave = delay.apply_delay(synthesizer.wave, delay_samples, percent_mix)
-            delay_count += 1
-        elif effect == 'vibrato':
-            if args.vibrato is not None:
-                vibrato_arg_list = args.vibrato[vibrato_count]
-                if vibrato_arg_list is not None and len(vibrato_arg_list) >= 2:
-                    max_delay_samps = int(vibrato_arg_list[0])
-                    fmod = int(vibrato_arg_list[1])
-                # set default max delay and frequency modulation if no input parameters are provided
+        if synth == 'additive':
+            # print('Do additive stuff here.')
+            add_synth_type = str(args.synth[0][1]).lower()
+            if add_synth_type != 'square' and add_synth_type != 'sine':
+                print("The only valid additive synthesizer types are 'square' and 'sine'.")
+        elif synth == 'wavetable':
+            if len(args.synth[0]) >= 3:
+                timbre = np.abs(int(args.synth[0][1]))
+                if timbre > 10:
+                    timbre = 10  # Gracefully accept any number, but cap it at 10.
+                sweep = str(args.synth[0][2]).lower()
+                if sweep.lower() == 'sweep':
+                    if len(args.synth[0]) >= 4:
+                        speed = np.abs(float(args.synth[0][3]))
+                    else:
+                        print('When passing a sweeping signal, a sweep period must be provided.')
+                        exit(0)
                 else:
-                    print('Both a maximum delay and fmod must be passed to the Vibrato module. '
-                          'Defaulting to a maximum delay of 50 samples and fmod of 1.')
-                    max_delay_samps = 50
-                    fmod = 1
-            synthesizer.wave = vibrato.apply_vibrato(synthesizer.wave, max_delay_samps, fmod)
-            vibrato_count += 1
-        elif effect == 'bandpass':
-            if args.bandpass is not None:
-                bandpass_arg_list = args.bandpass[bandpass_count]
-                if bandpass_arg_list is not None and len(bandpass_arg_list) >= 2:
-                    lowcut = int(bandpass_arg_list[0])
-                    highcut = int(bandpass_arg_list[1])
-                else:
-                    print('Both a lowcut frequency and highcut frequency are required to use bandpass. '
-                          'Defaulting to 150Hz and 15000Hz')
-                    lowcut = 150
-                    highcut = 15000
-                synthesizer.wave = bandpass.band_pass(synthesizer.wave, lowcut, highcut, SAMPLE_RATE)
-            bandpass_count += 1
-        elif effect == 'lowpass':
-            if args.lowpass is not None:
-                lowpass_arg_list = args.lowpass[lowpass_count]
-                if lowpass_arg_list is not None and len(lowpass_arg_list) >= 1:
-                    critical_freq = int(lowpass_arg_list[0])
-                else:
-                    print('A critical frequency is required to use lowpass. '
-                          'Defaulting to 1000Hz')
-                    critical_freq = 10000
-                synthesizer.wave = lowpass.low_pass(synthesizer.wave, critical_freq, SAMPLE_RATE)
-            lowpass_count += 1
-        elif effect == 'reverb':
-            reverb_arg_list = args.reverb[reverb_count]
-
-            if len(reverb_arg_list) >= 2:
-                percent_mix = float(reverb_arg_list[1])
-                # If the percent_mix is greater than 1, be nice and warn the user but also set it to 1
-                if percent_mix > 1.0:
-                    print('Wet/dry mix percentages must be between 0 and 1. '
-                          'The value {percent_mix} was provided so we are defaulting to 1.')
-                    percent_mix = 1.0
+                    speed = 0
             else:
-                print('No wet/dry mix percentage was provided for the reverb, defaulting to a 50% blend.')
-                percent_mix = 0.5
-
-            if str(reverb_arg_list[0]) == 'big_hall':
-                synthesizer.wave = reverb.apply_reverb(synthesizer.wave, 'big_hall.wav', percent_mix=percent_mix)
-            elif str(reverb_arg_list[0]) == 'big_room':
-                synthesizer.wave = reverb.apply_reverb(synthesizer.wave, 'big_room.wav', percent_mix=percent_mix)
-            elif str(reverb_arg_list[0]) == 'box':
-                synthesizer.wave = reverb.apply_reverb(synthesizer.wave, 'box.wav', percent_mix=percent_mix)
-            elif str(reverb_arg_list[0]) == 'drum_plate':
-                synthesizer.wave = reverb.apply_reverb(synthesizer.wave, 'drum_plate.wav', percent_mix=percent_mix)
-            elif str(reverb_arg_list[0]) == 'jazz_hall':
-                synthesizer.wave = reverb.apply_reverb(synthesizer.wave, 'jazz_hall.wav', percent_mix=percent_mix)
-            elif str(reverb_arg_list[0]) == 'wet_reverb':
-                synthesizer.wave = reverb.apply_reverb(synthesizer.wave, 'wet_reverb.wav', percent_mix=percent_mix)
-            else:
-                print("'big_hall', 'big_room', 'box', 'drum_plate', 'jazz_hall', and 'wet_reverb' are the only reverbs "
-                      "currently available.")
+                print('The timbre value and sweep/static arguments must be passed with the wavetable.')
+                print("If 'sweep' is passed as a parameter, a sweep period must also be passed.")
                 exit(0)
+        else:
+            print('Only additive and wavetable synths are supported.')
+            exit(0)
 
-            reverb_count += 1
+        if args.delay is not None:
+            delay = Delay()
 
-    # Down-sampling code is provided below.
-    data = np.asarray(synthesizer.wave, dtype=np.int32)
-    data = data.astype(np.int32)
+        if args.reverb is not None:
+            reverb = Reverb()
 
-    output = Downsampler()
-    res = data
+        if args.vibrato is not None:
+            vibrato = Vibrato()
+        if args.chorus is not None:
+            chorus = Chorus()
+        if args.bandpass is not None:
+            bandpass = Bandpass()
+        if args.lowpass is not None:
+            lowpass = Lowpass()
 
-    if args.samplerate is not None:
-        output.output_sample_rate = int(args.samplerate[0][0])
+        # print("Processing the kern file...")
+        notes = Notes()
+        notes.parse_kern(kern_file=kern_file)
+        bar()
+        args_ordered = sys.argv
+        
+        # print("Synthesizing the audio...")
+        # Use the synth engine selected by the user to digitize the melody from the kern file.
+        if synth.lower() == 'wavetable':
+            synthesizer = WavetableSynth()
+            synthesizer.generate_wavetable(notes, timbre, sweep, speed)
+        elif synth.lower() == 'additive':
+            synthesizer = AdditiveSynth()
+            synthesizer.generate_additive_wav(notes, add_synth_type)
+        else:
+            print('Additive and Wavetable are the only valid synthesizer options.')
+            exit(0)
+        bar()
+        chorus_count = 0
+        delay_count = 0
+        vibrato_count = 0
+        bandpass_count = 0
+        lowpass_count = 0
+        reverb_count = 0
 
-        down_factor = ceil(SAMPLE_RATE/float(output.output_sample_rate))
-        t = len(synthesizer.wave)/SAMPLE_RATE
-        down_sampled_data = output.down_sample(synthesizer.wave, down_factor, output.output_sample_rate, SAMPLE_RATE)
-        res = output.up_sample(down_sampled_data, int(SAMPLE_RATE/down_factor), output.output_sample_rate, t)
-    else:
-        print('A sample rate must be provided.')
-        exit(0)
+        # Loop through the effects selected by the user and apply them to the melody in order.
+        # The arg_list lists will contain the list of arguments passed in by the user that are associated with that
+        # instance of that argument. This is the cleanest way I could come up with to separate multiple instances of an
+        # Effect. For example, if the user inserts a low pass filter more than once then args.lowpass[0] will have the
+        # arguments for the first lowpass filter, and args.lowpass[1] will have the arguments for the second lowpass filter.
+        
+        # print("Applying the effects...")
+        for effect in effects_list:
+            if effect == 'chorus':
+                if args.chorus is not None:
+                    chorus_arg_list = args.chorus[chorus_count]
+                    chorus_arg_list = args.chorus[chorus_count]
+                    max_delay_samps = int(chorus_arg_list[0])
+                    fmod = float(chorus_arg_list[1])
+                    chorus_count += 1
+                    print(chorus_arg_list)
+                else:
+                    maxDelaySamps = 50
+                    fmod = 1
+                synthesizer.wave = chorus.apply_chorus(synthesizer.wave, max_delay_samps, fmod)
+                chorus_count += 1
+            elif effect == 'delay':
+                delay_arg_list = args.delay[delay_count]
+                if delay_arg_list is not None and len(delay_arg_list) >= 2:
+                    # TODO: Remember to make the internal SR global to the system.
+                    delay_samples = int(float(delay_arg_list[0]) * SAMPLE_RATE)
+                    percent_mix = float(delay_arg_list[1])
+                else:
+                    print('The number of seconds to delay and mix percentage must be provided to implement delay. '
+                          'Defaulting to no delay.')
+                    delay_samples = 0
+                    percent_mix = 0
+                synthesizer.wave = delay.apply_delay(synthesizer.wave, delay_samples, percent_mix)
+                delay_count += 1
+            elif effect == 'vibrato':
+                if args.vibrato is not None:
+                    vibrato_arg_list = args.vibrato[vibrato_count]
+                    if vibrato_arg_list is not None and len(vibrato_arg_list) >= 2:
+                        max_delay_samps = int(vibrato_arg_list[0])
+                        fmod = int(vibrato_arg_list[1])
+                    # set default max delay and frequency modulation if no input parameters are provided
+                    else:
+                        print('Both a maximum delay and fmod must be passed to the Vibrato module. '
+                              'Defaulting to a maximum delay of 50 samples and fmod of 1.')
+                        max_delay_samps = 50
+                        fmod = 1
+                synthesizer.wave = vibrato.apply_vibrato(synthesizer.wave, max_delay_samps, fmod)
+                vibrato_count += 1
+            elif effect == 'bandpass':
+                if args.bandpass is not None:
+                    bandpass_arg_list = args.bandpass[bandpass_count]
+                    if bandpass_arg_list is not None and len(bandpass_arg_list) >= 2:
+                        lowcut = int(bandpass_arg_list[0])
+                        highcut = int(bandpass_arg_list[1])
+                    else:
+                        print('Both a lowcut frequency and highcut frequency are required to use bandpass. '
+                              'Defaulting to 150Hz and 15000Hz')
+                        lowcut = 150
+                        highcut = 15000
+                    synthesizer.wave = bandpass.band_pass(synthesizer.wave, lowcut, highcut, SAMPLE_RATE)
+                bandpass_count += 1
+            elif effect == 'lowpass':
+                if args.lowpass is not None:
+                    lowpass_arg_list = args.lowpass[lowpass_count]
+                    if lowpass_arg_list is not None and len(lowpass_arg_list) >= 1:
+                        critical_freq = int(lowpass_arg_list[0])
+                    else:
+                        print('A critical frequency is required to use lowpass. '
+                              'Defaulting to 1000Hz')
+                        critical_freq = 10000
+                    synthesizer.wave = lowpass.low_pass(synthesizer.wave, critical_freq, SAMPLE_RATE)
+                lowpass_count += 1
+            elif effect == 'reverb':
+                reverb_arg_list = args.reverb[reverb_count]
 
-    if args.bitrate is not None:
-        output.output_bit_rate = int(args.bitrate[0][0])
-        dq1 = output.down_quantization(res, 32, output.output_bit_rate)
-    else:
-        print('A bitrate of 8, 16, or 24 must be provided.')
-        exit(0)
+                if len(reverb_arg_list) >= 2:
+                    percent_mix = float(reverb_arg_list[1])
+                    # If the percent_mix is greater than 1, be nice and warn the user but also set it to 1
+                    if percent_mix > 1.0:
+                        print('Wet/dry mix percentages must be between 0 and 1. '
+                              'The value {percent_mix} was provided so we are defaulting to 1.')
+                        percent_mix = 1.0
+                else:
+                    print('No wet/dry mix percentage was provided for the reverb, defaulting to a 50% blend.')
+                    percent_mix = 0.5
 
-    output.write_wav(args.output[0][0], dq1, output.output_sample_rate, output.output_bit_rate)
+                if str(reverb_arg_list[0]) == 'big_hall':
+                    synthesizer.wave = reverb.apply_reverb(synthesizer.wave, 'big_hall.wav', percent_mix=percent_mix)
+                elif str(reverb_arg_list[0]) == 'big_room':
+                    synthesizer.wave = reverb.apply_reverb(synthesizer.wave, 'big_room.wav', percent_mix=percent_mix)
+                elif str(reverb_arg_list[0]) == 'box':
+                    synthesizer.wave = reverb.apply_reverb(synthesizer.wave, 'box.wav', percent_mix=percent_mix)
+                elif str(reverb_arg_list[0]) == 'drum_plate':
+                    synthesizer.wave = reverb.apply_reverb(synthesizer.wave, 'drum_plate.wav', percent_mix=percent_mix)
+                elif str(reverb_arg_list[0]) == 'jazz_hall':
+                    synthesizer.wave = reverb.apply_reverb(synthesizer.wave, 'jazz_hall.wav', percent_mix=percent_mix)
+                elif str(reverb_arg_list[0]) == 'wet_reverb':
+                    synthesizer.wave = reverb.apply_reverb(synthesizer.wave, 'wet_reverb.wav', percent_mix=percent_mix)
+                else:
+                    print("'big_hall', 'big_room', 'box', 'drum_plate', 'jazz_hall', and 'wet_reverb' are the only reverbs "
+                          "currently available.")
+                    exit(0)
+
+                reverb_count += 1
+        bar()
+
+        # print("Downsampling and downquantizing...")
+        # Down-sampling code is provided below.
+        data = np.asarray(synthesizer.wave, dtype=np.int32)
+        data = data.astype(np.int32)
+
+        output = Downsampler()
+        res = data
+
+        if args.samplerate is not None:
+            output.output_sample_rate = int(args.samplerate[0][0])
+
+            down_factor = ceil(SAMPLE_RATE/float(output.output_sample_rate))
+            t = len(synthesizer.wave)/SAMPLE_RATE
+            down_sampled_data = output.down_sample(synthesizer.wave, down_factor, output.output_sample_rate, SAMPLE_RATE)
+            res = output.up_sample(down_sampled_data, int(SAMPLE_RATE/down_factor), output.output_sample_rate, t)
+        else:
+            print('A sample rate must be provided.')
+            exit(0)
+
+        if args.bitrate is not None:
+            output.output_bit_rate = int(args.bitrate[0][0])
+            dq1 = output.down_quantization(res, 32, output.output_bit_rate)
+        else:
+            print('A bitrate of 8, 16, or 24 must be provided.')
+            exit(0)
+        bar()
+        # print("Almost done! Generating the audio in",args.output[0][0])
+        output.write_wav(args.output[0][0], dq1, output.output_sample_rate, output.output_bit_rate)
+        bar()

@@ -78,7 +78,7 @@ class Downsampler:
 
     # write_wav : function to return a wav type output file based on the data and sample rate provided
     def write_wav(self, wave_file_path, data, fs = output_sample_rate, bitrate=output_bit_rate):
-        print("writing data:", data, "sampling-rate:", fs,  "at bit-rate:", bitrate, " to ", wave_file_path)
+        # print("writing data:", data, "sampling-rate:", fs,  "at bit-rate:", bitrate, " to ", wave_file_path)
         if bitrate == 8:
             sampwidth=1  
         elif bitrate == 16:
