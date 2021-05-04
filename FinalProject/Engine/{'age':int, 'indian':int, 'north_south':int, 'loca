@@ -1,5 +1,0 @@
-{'age':int, 'indian':int, 'north_south':int, 'location':int, 'sleep_cycle':int, 'sc2':int,
-       'fam_hin':int, 'fam_car':int, 'fam_west':int, 'train_hin':int, 'train_car':int,
-       'train_west':int, 'a_bhupali':int, 'a_bhairav':int, 'a_malkauns':int, 'a_vs':int,
-       'c_vs':int, 'c_bhupali':int, 'c_bhairav':int, 'c_malkauns':int, 'feedback':int,
-       'total':int, 'alaap':int, 'concert':int}
