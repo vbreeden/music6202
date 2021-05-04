@@ -113,7 +113,6 @@ if __name__ == '__main__':
     with alive_bar(5, 'Cooking some tasty tunes...',bar='blocks',spinner = 'notes_scrolling') as bar:
         # Retrieve the argument information
         args = define_args()
-        # print(args)
         effects_list = get_effects_list()
 
         # The kern file declaration is here to prevent the debugger from posting any undeclared-variable warnings.
@@ -132,7 +131,6 @@ if __name__ == '__main__':
             exit(0)
 
         if synth == 'additive':
-            # print('Do additive stuff here.')
             add_synth_type = str(args.synth[0][1]).lower()
             if add_synth_type != 'square' and add_synth_type != 'sine':
                 print("The only valid additive synthesizer types are 'square' and 'sine'.")
@@ -173,13 +171,11 @@ if __name__ == '__main__':
         if args.lowpass is not None:
             lowpass = Lowpass()
 
-        # print("Processing the kern file...")
         notes = Notes()
         notes.parse_kern(kern_file=kern_file)
         bar()
         args_ordered = sys.argv
         
-        # print("Synthesizing the audio...")
         # Use the synth engine selected by the user to digitize the melody from the kern file.
         if synth.lower() == 'wavetable':
             synthesizer = WavetableSynth()
@@ -204,7 +200,6 @@ if __name__ == '__main__':
         # Effect. For example, if the user inserts a low pass filter more than once then args.lowpass[0] will have the
         # arguments for the first lowpass filter, and args.lowpass[1] will have the arguments for the second lowpass filter.
         
-        # print("Applying the effects...")
         for effect in effects_list:
             if effect == 'chorus':
                 if args.chorus is not None:
@@ -213,7 +208,6 @@ if __name__ == '__main__':
                     max_delay_samps = int(chorus_arg_list[0])
                     fmod = float(chorus_arg_list[1])
                     chorus_count += 1
-                    print(chorus_arg_list)
                 else:
                     maxDelaySamps = 50
                     fmod = 1
@@ -222,7 +216,6 @@ if __name__ == '__main__':
             elif effect == 'delay':
                 delay_arg_list = args.delay[delay_count]
                 if delay_arg_list is not None and len(delay_arg_list) >= 2:
-                    # TODO: Remember to make the internal SR global to the system.
                     delay_samples = int(float(delay_arg_list[0]) * SAMPLE_RATE)
                     percent_mix = float(delay_arg_list[1])
                 else:
@@ -303,8 +296,6 @@ if __name__ == '__main__':
 
                 reverb_count += 1
         bar()
-
-        # print("Downsampling and downquantizing...")
         # Down-sampling code is provided below.
         data = np.asarray(synthesizer.wave, dtype=np.int32)
         data = data.astype(np.int32)
@@ -330,6 +321,5 @@ if __name__ == '__main__':
             print('A bitrate of 8, 16, or 24 must be provided.')
             exit(0)
         bar()
-        # print("Almost done! Generating the audio in",args.output[0][0])
         output.write_wav(args.output[0][0], dq1, output.output_sample_rate, output.output_bit_rate)
         bar()
