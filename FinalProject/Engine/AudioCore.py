@@ -6,6 +6,7 @@ from music21 import converter
 from scipy.interpolate import interp1d
 from scipy import signal
 import wavio
+import os
 
 
 @dataclass
@@ -86,8 +87,12 @@ class Downsampler:
             sampwidth = 3
         else: 
             sampwidth = 4
-        
-        wavio.write(wave_file_path, data, fs, sampwidth=sampwidth)
+
+        output_dir = 'audio/'
+        cwd = os.getcwd()
+        output_file_path = os.path.join(cwd, output_dir, wave_file_path)
+
+        wavio.write(output_file_path, data, fs, sampwidth=sampwidth)
 
     # Low pass filter (type of low pass: butter) : function to remove the frequencies above
     # the Shannon Nyquist frequency

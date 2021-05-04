@@ -49,7 +49,7 @@ class AdditiveSynth:
         sum_sines = amplitude * np.sign(self.generate_sine_wave(frequency, duration, amplitude))
 
         flag = max(sum_sines) if max(sum_sines) else 1
-        x = amplitude * np.divide(sum_sines, flag)
+        x = 0.5 * np.divide(sum_sines, flag)
         x = x * np.iinfo(np.int32).max
         x = x.astype(np.int32)
 
