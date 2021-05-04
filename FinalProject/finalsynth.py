@@ -220,7 +220,7 @@ if __name__ == '__main__':
                     vibrato_arg_list = args.vibrato[vibrato_count]
                     if vibrato_arg_list is not None and len(vibrato_arg_list) >= 2:
                         max_delay_samps = int(vibrato_arg_list[0])
-                        fmod = int(vibrato_arg_list[1])
+                        fmod = float(vibrato_arg_list[1])
                     # set default max delay and frequency modulation if no input parameters are provided
                     else:
                         print('Both a maximum delay and fmod must be passed to the Vibrato module. '
