@@ -21,7 +21,14 @@ class Reverb:
         convolved_wave = fftconvolve(self.wave, self.ir)
 
         dry_signal = self.wave * (1.0 - percent_mix)
-        wet_signal = (convolved_wave / np.abs(np.max(convolved_wave)))*percent_mix
+        wet_signal = (convolved_wave / np.abs(np.max(convolved_wave)))
+
+        # The wet signal needs to be re-scaled to match the order of magnitude of the dry signal
+        flag = max(wet_signal) if max(wet_signal) else 1
+        wet_signal = 0.5 * np.divide(wet_signal, flag)
+        wet_signal = wet_signal * np.iinfo(np.int32).max
+        wet_signal = wet_signal * percent_mix
+        wet_signal = wet_signal.astype(np.int32)
 
         if len(dry_signal) < len(wet_signal):
             pad_length = np.abs(len(dry_signal) - len(wet_signal))
@@ -29,6 +36,8 @@ class Reverb:
         elif len(wet_signal) < len(dry_signal):
             pad_length = np.abs(len(dry_signal) - len(wet_signal))
             wet_signal = np.pad(wet_signal, (0, pad_length), 'constant')
+
+        # Rescale the wet and dry signals
 
         # Re-assign the convolved wave as a mixture of the wet and dry signals.
         convolved_wave = dry_signal + wet_signal
