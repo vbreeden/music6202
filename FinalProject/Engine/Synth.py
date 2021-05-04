@@ -95,10 +95,6 @@ class WavetableSynth:
         amplitudes = notes.amplitudes
         durations = notes.durations
 
-        print('frequencies=', frequencies)
-        print('amplitudes=', amplitudes)
-        print('durations=', durations)
-
         # get list of unique frequencies in the kern file
         unique_freqs = np.unique(frequencies)
         unique_freqs = unique_freqs[unique_freqs != 0]
