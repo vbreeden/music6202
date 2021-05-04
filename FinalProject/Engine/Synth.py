@@ -46,7 +46,14 @@ class AdditiveSynth:
         return resized_single_cycle
 
     def generate_square_wave(self, frequency, duration, amplitude):
-        return amplitude * np.sign(self.generate_sine_wave(frequency, duration, amplitude))
+        sum_sines = amplitude * np.sign(self.generate_sine_wave(frequency, duration, amplitude))
+
+        flag = max(sum_sines) if max(sum_sines) else 1
+        x = amplitude * np.divide(sum_sines, flag)
+        x = x * np.iinfo(np.int32).max
+        x = x.astype(np.int32)
+
+        return x
 
     def add_sine_waves(self, frequency, duration, amplitude):
         # first harmonic (fundamental frequency)
