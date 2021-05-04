@@ -3,15 +3,10 @@ from math import ceil
 import numpy as np
 from dataclasses import dataclass, field
 from music21 import converter
-import matplotlib.pyplot as plt
-import soundfile as sf
-from soundfile import SoundFile, write
-from subtypes import Subtype
-import scipy
 from scipy.interpolate import interp1d
 from scipy import signal
 import wavio
-
+import os
 
 
 @dataclass
@@ -21,6 +16,7 @@ class Buffer:
 
     def create_buffer(self, seconds=0.0):
         self.buffer = np.zeros(int(ceil(self.sr * seconds)))
+
 
 @dataclass
 class Notes:
@@ -74,6 +70,7 @@ class Notes:
 
             i += 1
 
+
 @dataclass
 class Downsampler:
     output_sample_rate: int = 48000
@@ -81,7 +78,7 @@ class Downsampler:
 
     # write_wav : function to return a wav type output file based on the data and sample rate provided
     def write_wav(self, wave_file_path, data, fs = output_sample_rate, bitrate=output_bit_rate):
-        print("writing data:", data, "sampling-rate:", fs,  "at bit-rate:", bitrate, " to ", wave_file_path)
+        # print("writing data:", data, "sampling-rate:", fs,  "at bit-rate:", bitrate, " to ", wave_file_path)
         if bitrate == 8:
             sampwidth=1  
         elif bitrate == 16:
@@ -90,10 +87,15 @@ class Downsampler:
             sampwidth = 3
         else: 
             sampwidth = 4
-        
-        wavio.write(wave_file_path, data, fs, sampwidth=sampwidth)
 
-    # Low pass filter (type of low pass: butter) : function to remove the frequencies above the Shannon Nyquist frequency
+        output_dir = 'audio/'
+        cwd = os.getcwd()
+        output_file_path = os.path.join(cwd, output_dir, wave_file_path)
+
+        wavio.write(output_file_path, data, fs, sampwidth=sampwidth)
+
+    # Low pass filter (type of low pass: butter) : function to remove the frequencies above
+    # the Shannon Nyquist frequency
     def low_pass(self, data, Fs_new, Fs):
         b, a =signal.butter(N=2, Wn=Fs_new/2, btype='low', analog=False, fs=Fs)
         filtered = signal.filtfilt(b, a, data)
@@ -121,17 +123,18 @@ class Downsampler:
         return self.cubic_interpolate(data, t, new_samples)
 
     def add_triangular_dither(self, original, original_br, new_br):
-        #shape = original_br-new_br #calculate the noise shape based on the difference between original and new bitrate.
+        # shape = original_br-new_br
+        # calculate the noise shape based on the difference
+        # between original and new bitrate.
         diff = original_br - new_br
         left = (-1)*(2**diff)
         mode = 0
         right = (2**diff) - 1
-        size = (original.shape) 
-        noise = np.random.triangular(left, mode, right, size) #generate noise with mean = 0 and standard dev = 0.01
+        size = original.shape
+        noise = np.random.triangular(left, mode, right, size)  # generate noise with mean = 0 and standard dev = 0.01
         noise = noise.astype(np.int32)
 
-        self.write_wav("noise.wav", noise, 41000, diff)
-        new_signal = original + noise  #add noise to the signal to generate signal with added dither
+        new_signal = original + noise  # add noise to the signal to generate signal with added dither
         return new_signal 
 
     # down_quantization: function to perform dithering and return the down-quantized signal
@@ -148,8 +151,5 @@ class Downsampler:
         down_quantized = np.zeros(len(dithered), dtype=np.int32)
         
         for i in range(len(dithered)):
-            down_quantized[i] = dithered[i]>>(original_br-new_br)
+            down_quantized[i] = dithered[i] >> (original_br-new_br)
         return down_quantized
-        
-
-

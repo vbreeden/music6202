@@ -1,6 +1,4 @@
 from dataclasses import dataclass, field
-from scipy.io.wavfile import write
-import matplotlib.pyplot as plt
 import numpy as np
 
 SAMPLE_RATE = 48000
@@ -12,8 +10,8 @@ class AdditiveSynth:
     wave_type: str = ''
     wave: list[float] = field(default_factory=list)
 
-    def generate_additive_wav(self, notes, type):
-        self.wave_type = type
+    def generate_additive_wav(self, notes, synth_type):
+        self.wave_type = synth_type
         if self.wave_type == 'square':
             self.wave_file_path = 'out_square'
         elif self.wave_type == 'sine':
@@ -48,11 +46,18 @@ class AdditiveSynth:
         return resized_single_cycle
 
     def generate_square_wave(self, frequency, duration, amplitude):
-        return amplitude * np.sign(self.generate_sine_wave(frequency, duration, amplitude))
+        sum_sines = amplitude * np.sign(self.generate_sine_wave(frequency, duration, amplitude))
+
+        flag = max(sum_sines) if max(sum_sines) else 1
+        x = 0.5 * np.divide(sum_sines, flag)
+        x = x * np.iinfo(np.int32).max
+        x = x.astype(np.int32)
+
+        return x
 
     def add_sine_waves(self, frequency, duration, amplitude):
         # first harmonic (fundamental frequency)
-        num_harmonics = 4
+        # num_harmonics = 4
         h1 = frequency
         sum_sines = self.generate_sine_wave(h1, duration, amplitude)
         # 2nd harmonic octave above fundamental
@@ -64,16 +69,6 @@ class AdditiveSynth:
         # 4th harmonic 2 octaves above fundamental
         h4 = h1 * 4
         sum_sines += self.generate_sine_wave(h4, duration, amplitude / 4)
-
-        # print('harmonics=',h1,h2,h3,h4)
-
-        # Because num_harmonics is hardcoded, we can comment the if-statement out for now.
-        # We can re-introduce it if needed in the future.
-        # rescale to prevent clipping
-        # if num_harmonics > 1:
-        # x = sumSines / (numHarmonics - 1)
-
-        # Condition to cater to the divide by zero case
 
         flag = max(sum_sines) if max(sum_sines) else 1
         x = amplitude * np.divide(sum_sines, flag)
@@ -100,19 +95,14 @@ class WavetableSynth:
         amplitudes = notes.amplitudes
         durations = notes.durations
 
-        print('frequencies=', frequencies)
-        print('amplitudes=', amplitudes)
-        print('durations=', durations)
-
         # get list of unique frequencies in the kern file
         unique_freqs = np.unique(frequencies)
         unique_freqs = unique_freqs[unique_freqs != 0]
-        # print('unique_freqs=',unique_freqs)
         wavetable = []
         # first dimension of wavetable corresponds to number of unique frequencies in the krn file (excluding rests)
         for i in range(len(unique_freqs)):
-            frequency=unique_freqs[i]
-            wavetable_row=[]
+            frequency = unique_freqs[i]
+            wavetable_row = []
             # second dimension of wavetable corresponds to timbre from square to sine wave
             for j in range(0, 11):
                 phase_array = self.get_single_phase_argument(frequency)
@@ -139,7 +129,7 @@ class WavetableSynth:
                     x_curr = np.resize(single_cycle, num_samples_note).astype(np.float32)
                     x = self.wave.extend(x_curr)
                 elif sweep == 'sweep':
-                    # speed = 0.5 # amount of time in secs to complete one L-R sweep across wavetable
+                    # speed is the amount of time in secs to complete one L-R sweep across wavetable
                     tb = timbre  # initialize timbre
                     # initialize direction of sweep across the wavetable
                     if tb == 10:
@@ -161,9 +151,7 @@ class WavetableSynth:
                         # avoid pops at transitions by ensuring length is a multiple of the single cycle length
                         remainder = num_samples_curr % num_samples_single
                         num_samples_curr += (num_samples_single - remainder)
-                        # num_samples_curr -= remainder
                         x_curr = np.resize(single_cycle, num_samples_curr).astype(np.float32)
-                        # x_note = self.wave.extend(x_curr)
                         x = self.wave.extend(x_curr)
 
                         # increment timbre to next position in wavetable and reverse direction at the ends
@@ -175,7 +163,6 @@ class WavetableSynth:
                             tb -= 1
                             if tb == 0:
                                 direction = 'forward'
-                        # num_samples_left = num_samples_note - len(x_note)
                         # update number of samples that have been populated, and number left to populate for the note
                         num_samples_pop += num_samples_curr
                         num_samples_left = num_samples_note - num_samples_pop
@@ -186,7 +173,7 @@ class WavetableSynth:
 
         self.wave = np.asarray(self.wave, np.float64)
 
-        #The following lines amplify the amplitudes proportionately to int32
+        # The following lines amplify the amplitudes proportionately to int32
         # Condition to cater to the divide by zero case
         flag = max(self.wave) if max(self.wave) else 1
         self.wave = 0.5 * np.divide(self.wave, flag)
@@ -194,5 +181,3 @@ class WavetableSynth:
         self.wave = self.wave.astype(np.int32)
 
         return self.wave
-
-

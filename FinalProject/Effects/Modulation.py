@@ -1,8 +1,6 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 import numpy as np
 import math
-from scipy.io.wavfile import write
-import matplotlib.pyplot as plt
 
 # code for ring buffer and modulated effects adapted from Andrew Beck's code in 19-ModulatedEffects.ipynb
 
@@ -57,49 +55,43 @@ class LinearWrap(object):
 
 @dataclass
 class Chorus:
-    wave_file_path: str = 'chorus.wav'
 
-    def apply_chorus(self, wave, maxDelaySamps, fmod):
+    def apply_chorus(self, wave, max_delay_samps, fmod):
 
         # Simple Chorus
-        # x, sr = sf.read('input/sv.wav')
         x = LinearWrap(wave)
-        print(type(x))
-        # output = 'output/sv_simpleChorus.wav'
 
-        fmod = 1.5
+        # fmod = 1.5
         A = int(0.002 * SAMPLE_RATE)
         M = int(0.002 * SAMPLE_RATE)
-        BL = 1.0
+        BL = 0.3
         FF = 0.7
 
         if A > M:
             raise RuntimeError("Amplitude of vibrato too high for delay length")
 
-        maxDelaySamps = M + A + 2 # Probably don't need the 2 here, but being safe
-        outputSamps = len(x) + maxDelaySamps
-        y = np.zeros(outputSamps)
-        ringBuf = LinearRingBuffer(maxDelaySamps)
-        deltaPhi = fmod/SAMPLE_RATE
+        # max_delay_samps = M + A + 2  # Probably don't need the 2 here, but being safe
+        output_samps = len(x) + max_delay_samps
+        y = np.zeros(output_samps)
+        ring_buf = LinearRingBuffer(max_delay_samps)
+        delta_phi = fmod/SAMPLE_RATE
         phi = 0
 
-        for i in range(outputSamps):
+        for i in range(output_samps):
             s = x[i]
-            ringBuf.pushSample(s)
-            delaySamps = M + int(math.sin(2 * math.pi * phi) * A)
-            y[i] = s * BL + ringBuf.delayedSample(delaySamps) * FF
+            ring_buf.pushSample(s)
+            delay_samps = M + int(math.sin(2 * math.pi * phi) * A)
+            y[i] = s * BL + ring_buf.delayedSample(delay_samps) * FF
 
-            phi = phi + deltaPhi
+            phi = phi + delta_phi
             while phi >= 1:
                 phi -= 1
 
-        write(self.wave_file_path, SAMPLE_RATE, np.array(y))
-
         return y
+
 
 @dataclass
 class Delay:
-    wave_file_path: str = 'DelayLine'
 
     def apply_delay(self, wave, delay_samples, percent_mix=0.5):
         linear_wrap = LinearWrap(wave)
@@ -113,14 +105,11 @@ class Delay:
             ring_buf.pushSample(s)
             delay[i] = s * percent_mix + ring_buf.delayedSample(delay_samples) * (1 - percent_mix)
 
-        self.wave_file_path = 'DelayLine'
-        write(self.wave_file_path + ".wav", SAMPLE_RATE, np.array(delay))
         return delay
 
 
 @dataclass
 class Vibrato:
-    wave_file_path: str = 'Vibrato'
     wave: np.ndarray = np.zeros(0)
 
     def apply_vibrato(self, wave, max_delay_samps, fmod):
@@ -143,15 +132,4 @@ class Vibrato:
             while phi >= 1:
                 phi -= 1
 
-        plt.plot(y)
-        plt.savefig('vibratoplot.jpg')
-        plt.close()
-        plt.plot(y[0:1000])
-        plt.savefig('vibratoplot_subset.jpg')
-        plt.close()
-        plt.plot(y[46000:50000])
-        plt.savefig('vibratoplot_subset2.jpg')
-        plt.close()
-        self.wave_file_path = 'vibrato'
-        write(self.wave_file_path + ".wav", SAMPLE_RATE, np.array(y))
         return y
