@@ -27,27 +27,16 @@ def define_args():
     # Synthesizer choice
     parser.add_argument('-s', '--synth', nargs='+', action='append',
                         help='Choose the synth engine to be used (wavetable or additive) and pass in the appropriate '
-                             'parameters. Ex: finalsynth -s wavetable 5 sweep 0.75 (OR) finalsynth -s additive sine')
-    # Type of additive synthesizer
-    # parser.add_argument('-t', '--type', nargs='+', action='append',
-    #                     help='Choose type of additive synthesis (square or sine). Ex: finalsynth -s additive -t sine')
-
-    # Starting timbre of wavetable synthesizer
-    # parser.add_argument('-m', '--timbre', nargs='+', action='append',
-    #                     help='Choose starting timbre of wavetable synth (integer from 0=pure square to 10=pure sine).'
-    #                          'Ex: finalsynth -s wavetable -m 5')
-    # parser.add_argument('-w', '--sweep', nargs='+', action='append',
-    # help='Choose whether to sweep wavetable modulating between sine and square (static or sweep).'
-    #                          'Ex: finalsynth -s wavetable -m 5 -w sweep')
-    # parser.add_argument('-p', '--speed', nargs='+', action='append',
-    #                     help='Speed of sweep: amount of time in seconds to modulate between sine and square.'
-    #                          'Ex: finalsynth -s wavetable -m 5 -w sweep -p .5')
+                             'parameters. For wavetable, pass in timbre from 1 (square) to 10 (sine), static or sweep, and '
+                             'time in secs to sweep. For additive, pass in sine or square.'
+                             'Ex: finalsynth -s wavetable 5 sweep 0.75 (OR) finalsynth -s additive sine')
 
     # Modulation effects
     parser.add_argument('-c', '--chorus', nargs='+', action='append',
-                        help='Add a chorus effect to the signal path. Ex: finalsynth -c 200 1.5')
+                        help='Add a chorus effect to the signal path. Pass in max sample delay and frequency modulation'
+                             'Ex: finalsynth -c 200 1.5')
     parser.add_argument('-d', '--delay', nargs='+', action='append',
-                        help='Add a delay effect to the signal path. Ex: finalsynth -d DelayParam')
+                        help='Add a delay effect to the signal path. Pass in delay in seconds and wet/dry mix proportion. Ex: finalsynth -d 0.25 0.5')
     parser.add_argument('-v', '--vibrato', nargs='+', action='append',
                         help='Add a vibrato to the signal path. Pass in max delay samples and frequency modulation. '
                              'Ex: finalsynth -v 200 1')
@@ -61,6 +50,7 @@ def define_args():
     # Convolution effects
     parser.add_argument('-r', '--reverb', nargs='+', action='append',
                         help='Add a reverb effect to the signal path that utilizes a provided impulse response '
+                             'Pass in name of IR wav file and dry/wet proportion'
                              'wav file. Ex: finalsynth -r IR.wav 0.4')
 
     # Kern files
